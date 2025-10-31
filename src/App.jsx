@@ -32,6 +32,7 @@ const LifeStageAnalysis = lazy(() => import('./components/LifeStageAnalysis'))
 const CategoryTabs = lazy(() => import('./components/CategoryTabs'))
 const OhangChart = lazy(() => import('./components/OhangChart'))
 const TwelveUnseong = lazy(() => import('./components/TwelveUnseong'))
+const Sinsal = lazy(() => import('./components/Sinsal'))
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
@@ -632,6 +633,13 @@ function App() {
                     }}
                     showHanja={showHanja}
                   />
+                </Suspense>
+              )}
+
+              {/* 신살 */}
+              {result.saju_result.sinsal && (
+                <Suspense fallback={<LoadingSpinner message="신살 로딩 중..." />}>
+                  <Sinsal sinsal={result.saju_result.sinsal} />
                 </Suspense>
               )}
 

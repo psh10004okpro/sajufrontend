@@ -2179,3 +2179,375 @@
     font-size: 1.5rem;
   }
 }
+
+/* ==================== 신살 (Sinsal - Divine Stars) ==================== */
+
+.sinsal {
+  margin: 2rem 0;
+  padding: 2rem;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.sinsal-header {
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.sinsal-header h3 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.75rem;
+  color: #2c3e50;
+}
+
+.sinsal-description {
+  margin: 0;
+  color: #7f8c8d;
+  font-size: 1rem;
+}
+
+/* 신살 통계 요약 */
+.sinsal-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+  margin: 2rem 0;
+}
+
+.sinsal-summary-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  transition: transform 0.2s ease;
+}
+
+.sinsal-summary-item:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.sinsal-summary-item.gilsin {
+  background: linear-gradient(135deg, #d4f1f4 0%, #eafcf5 100%);
+  border-left: 4px solid #10b981;
+}
+
+.sinsal-summary-item.hyungsin {
+  background: linear-gradient(135deg, #ffe4e6 0%, #fee2e2 100%);
+  border-left: 4px solid #ef4444;
+}
+
+.sinsal-summary-item.neutral {
+  background: linear-gradient(135deg, #e0f2fe 0%, #dbeafe 100%);
+  border-left: 4px solid #3b82f6;
+}
+
+.summary-icon {
+  font-size: 2.5rem;
+}
+
+.summary-content {
+  flex: 1;
+}
+
+.summary-label {
+  font-size: 0.9rem;
+  color: #64748b;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.summary-value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin-top: 0.25rem;
+}
+
+/* 신살 섹션 */
+.sinsal-section {
+  margin: 2.5rem 0;
+}
+
+.sinsal-section-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 3px solid #e2e8f0;
+}
+
+.sinsal-section-header.gilsin-header {
+  border-bottom-color: #10b981;
+}
+
+.sinsal-section-header.hyungsin-header {
+  border-bottom-color: #ef4444;
+}
+
+.sinsal-section-header.neutral-header {
+  border-bottom-color: #3b82f6;
+}
+
+.sinsal-section-header .section-icon {
+  font-size: 1.75rem;
+}
+
+.sinsal-section-header h4 {
+  margin: 0;
+  font-size: 1.4rem;
+  color: #1e293b;
+}
+
+/* 신살 그리드 */
+.sinsal-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.5rem;
+}
+
+.sinsal-card {
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border: 2px solid var(--sinsal-color, #e2e8f0);
+}
+
+.sinsal-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+.sinsal-card.gilsin-card {
+  border-color: #10b981;
+}
+
+.sinsal-card.hyungsin-card {
+  border-color: #ef4444;
+}
+
+.sinsal-card.neutral-card {
+  border-color: #3b82f6;
+}
+
+.sinsal-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 1.25rem;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.sinsal-name-container {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.sinsal-icon {
+  font-size: 1.5rem;
+}
+
+.sinsal-name-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.sinsal-name {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.sinsal-hanja {
+  font-size: 0.9rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.sinsal-badges {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.5rem;
+}
+
+.sinsal-influence-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  color: white;
+  font-size: 0.8rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.sinsal-card-body {
+  padding: 1.25rem;
+}
+
+.sinsal-pillars {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.pillars-label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.pillar-badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  background: #e0f2fe;
+  color: #0369a1;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.sinsal-description-text {
+  margin: 0.75rem 0;
+  color: #475569;
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.sinsal-category-badge {
+  display: inline-block;
+  margin-top: 0.75rem;
+  padding: 0.35rem 0.85rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+/* 신살 설명 */
+.sinsal-legend {
+  margin-top: 2.5rem;
+  padding: 1.5rem;
+  background: #f8f9fa;
+  border-radius: 12px;
+  border: 2px dashed #dee2e6;
+}
+
+.sinsal-legend h4 {
+  margin: 0 0 1rem 0;
+  font-size: 1.2rem;
+  color: #2c3e50;
+}
+
+.sinsal-legend p {
+  margin: 0 0 1rem 0;
+  color: #5a6c7d;
+  line-height: 1.6;
+}
+
+.sinsal-legend-note {
+  padding: 1rem;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.sinsal-legend-note strong {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #667eea;
+  font-size: 1rem;
+}
+
+.legend-note-text {
+  color: #5a6c7d;
+  line-height: 1.8;
+  font-size: 0.95rem;
+}
+
+/* 반응형 - 신살 */
+@media (max-width: 768px) {
+  .sinsal {
+    padding: 1.5rem;
+  }
+
+  .sinsal-header h3 {
+    font-size: 1.5rem;
+  }
+
+  .sinsal-summary {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .sinsal-summary-item {
+    padding: 1.25rem;
+  }
+
+  .summary-icon {
+    font-size: 2rem;
+  }
+
+  .summary-value {
+    font-size: 1.75rem;
+  }
+
+  .sinsal-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .sinsal-section-header h4 {
+    font-size: 1.2rem;
+  }
+
+  .sinsal-card-header {
+    padding: 1rem;
+  }
+
+  .sinsal-name {
+    font-size: 1.1rem;
+  }
+
+  .sinsal-card-body {
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .sinsal {
+    padding: 1rem;
+  }
+
+  .sinsal-header h3 {
+    font-size: 1.3rem;
+  }
+
+  .summary-icon {
+    font-size: 1.75rem;
+  }
+
+  .summary-value {
+    font-size: 1.5rem;
+  }
+
+  .sinsal-name {
+    font-size: 1rem;
+  }
+
+  .sinsal-description-text {
+    font-size: 0.9rem;
+  }
+}
