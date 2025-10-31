@@ -29,6 +29,7 @@ const PDFLayout = lazy(() => import('./components/PDFLayout'))
 const DaeunTimeline = lazy(() => import('./components/DaeunTimeline'))
 const SaeunCard = lazy(() => import('./components/SaeunCard'))
 const LifeStageAnalysis = lazy(() => import('./components/LifeStageAnalysis'))
+const CategoryTabs = lazy(() => import('./components/CategoryTabs'))
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
@@ -69,6 +70,11 @@ function App() {
   const [showPDFPreview, setShowPDFPreview] = useState(false);
   const [pdfGenerating, setPdfGenerating] = useState(false);
 
+  // 분야별 운세 상태
+  const [activeCategory, setActiveCategory] = useState('overall');
+  const [categoryInterpretations, setCategoryInterpretations] = useState({});
+  const [categoryLoading, setCategoryLoading] = useState(false);
+
   // 초기 로드
   useEffect(() => {
     setHistory(getHistory());
@@ -108,6 +114,133 @@ function App() {
       }));
     }
   }, []);
+
+  // 분야별 질문 생성
+  const getCategoryQuestion = useCallback((category) => {
+    const questions = {
+      overall: '전체적인 운세를 종합적으로 알려주세요',
+      love: '애정운과 결혼운에 대해 자세히 알려주세요. 연애, 배우자, 이성 관계에 대한 운세를 분석해주세요',
+      wealth: '재물운과 금전운에 대해 자세히 알려주세요. 수입, 재산, 투자, 사업 운세를 분석해주세요',
+      career: '직업운과 사업운에 대해 자세히 알려주세요. 직장, 승진, 창업, 경력 발전에 대한 운세를 분석해주세요',
+      health: '건강운과 신체 운세에 대해 자세히 알려주세요. 건강 관리, 주의할 질병, 신체적 특징을 분석해주세요',
+      study: '학업운과 시험운에 대해 자세히 알려주세요. 학습, 시험, 자격증, 학업 성취에 대한 운세를 분석해주세요'
+    };
+    return questions[category] || questions.overall;
+  }, []);
+
+  // 분야별 해석 가져오기
+  const fetchCategoryInterpretation = useCallback(async (category) => {
+    if (!result || !result.saju_result) return;
+
+    // 이미 해석이 있으면 반환
+    if (categoryInterpretations[category]) {
+      return;
+    }
+
+    setCategoryLoading(true);
+    try {
+      const question = getCategoryQuestion(category);
+
+      if (useStreaming) {
+        // 스트리밍 방식
+        setIsStreaming(true);
+        setStreamingText('');
+
+        abortControllerRef.current = new AbortController();
+
+        const streamResponse = await fetch(`${API_BASE_URL}/api/v1/interpret/stream`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            saju_result: result.saju_result,
+            question: question,
+            detail_level: 'normal',
+          }),
+          signal: abortControllerRef.current.signal
+        });
+
+        if (!streamResponse.ok) {
+          throw new Error('AI 해석 스트리밍 중 오류가 발생했습니다.');
+        }
+
+        const reader = streamResponse.body.getReader();
+        const decoder = new TextDecoder();
+        let fullText = '';
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          const chunk = decoder.decode(value, { stream: true });
+          const lines = chunk.split('\n').filter(line => line.trim() !== '');
+
+          for (const line of lines) {
+            if (line.startsWith('data: ')) {
+              const data = line.slice(6);
+              if (data === '[DONE]') break;
+
+              try {
+                const parsed = JSON.parse(data);
+                if (parsed.content) {
+                  fullText += parsed.content;
+                  setStreamingText(fullText);
+                }
+              } catch (e) {
+                console.error('JSON 파싱 오류:', e);
+              }
+            }
+          }
+        }
+
+        setCategoryInterpretations(prev => ({
+          ...prev,
+          [category]: fullText
+        }));
+        setIsStreaming(false);
+      } else {
+        // 일반 방식
+        const response = await fetch(`${API_BASE_URL}/api/v1/interpret`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            saju_result: result.saju_result,
+            question: question,
+            detail_level: 'normal'
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error('AI 해석 중 오류가 발생했습니다.');
+        }
+
+        const data = await response.json();
+        setCategoryInterpretations(prev => ({
+          ...prev,
+          [category]: data.interpretation
+        }));
+      }
+    } catch (err) {
+      if (err.name === 'AbortError') {
+        console.log('해석 취소됨');
+      } else {
+        console.error('분야별 해석 오류:', err);
+        setError(err.message);
+      }
+    } finally {
+      setCategoryLoading(false);
+    }
+  }, [result, categoryInterpretations, getCategoryQuestion, useStreaming]);
+
+  // 분야 변경 핸들러
+  const handleCategoryChange = useCallback((category) => {
+    setActiveCategory(category);
+    setStreamingText('');
+
+    // overall이 아니고 해석이 없으면 가져오기
+    if (category !== 'overall' && !categoryInterpretations[category]) {
+      fetchCategoryInterpretation(category);
+    }
+  }, [categoryInterpretations, fetchCategoryInterpretation]);
 
   const handleStreamingAnalysis = useCallback(async (birthInfo) => {
     try {
@@ -168,6 +301,11 @@ function App() {
         interpretation: { interpretation: accumulatedText, topics_covered: [] }
       };
       setResult(finalResult);
+
+      // 전체 해석을 overall 카테고리에 저장
+      setCategoryInterpretations({ overall: accumulatedText });
+      setActiveCategory('overall');
+
       saveToHistory({
         birth_info: birthInfo,
         saju_result: sajuResult,
@@ -208,6 +346,11 @@ function App() {
 
       const data = await response.json();
       setResult(data);
+
+      // 전체 해석을 overall 카테고리에 저장
+      setCategoryInterpretations({ overall: data.interpretation.interpretation });
+      setActiveCategory('overall');
+
       saveToHistory({
         birth_info: birthInfo,
         saju_result: data.saju_result,
@@ -228,6 +371,8 @@ function App() {
     setError(null);
     setResult(null);
     setStreamingText('');
+    setCategoryInterpretations({});
+    setActiveCategory('overall');
 
     const birthInfo = {
       year: parseInt(formData.year),
@@ -500,6 +645,73 @@ function App() {
                   streamingText={streamingText}
                 />
               </Suspense>
+
+              {/* 분야별 운세 탭 */}
+              <Suspense fallback={<LoadingSpinner message="분야별 운세 탭 로딩 중..." />}>
+                <CategoryTabs
+                  activeCategory={activeCategory}
+                  onCategoryChange={handleCategoryChange}
+                  loading={categoryLoading || isStreaming}
+                />
+              </Suspense>
+
+              {/* 분야별 운세 컨텐츠 */}
+              {activeCategory !== 'overall' && categoryInterpretations[activeCategory] && (
+                <div className="category-content">
+                  <div className="category-content-header">
+                    <span className="category-content-icon">
+                      {activeCategory === 'love' && '💕'}
+                      {activeCategory === 'wealth' && '💰'}
+                      {activeCategory === 'career' && '💼'}
+                      {activeCategory === 'health' && '🏥'}
+                      {activeCategory === 'study' && '📚'}
+                    </span>
+                    <h3 className="category-content-title">
+                      {activeCategory === 'love' && '애정운 상세 분석'}
+                      {activeCategory === 'wealth' && '재물운 상세 분석'}
+                      {activeCategory === 'career' && '직업운 상세 분석'}
+                      {activeCategory === 'health' && '건강운 상세 분석'}
+                      {activeCategory === 'study' && '학업운 상세 분석'}
+                    </h3>
+                  </div>
+                  <div className="category-content-body">
+                    {categoryInterpretations[activeCategory]}
+                  </div>
+                </div>
+              )}
+
+              {/* 분야별 운세 로딩 중 */}
+              {activeCategory !== 'overall' && categoryLoading && (
+                <div className="category-content">
+                  <LoadingSpinner message={`${activeCategory} 운세 분석 중...`} />
+                </div>
+              )}
+
+              {/* 분야별 운세 스트리밍 중 */}
+              {activeCategory !== 'overall' && isStreaming && streamingText && (
+                <div className="category-content">
+                  <div className="category-content-header">
+                    <span className="category-content-icon">
+                      {activeCategory === 'love' && '💕'}
+                      {activeCategory === 'wealth' && '💰'}
+                      {activeCategory === 'career' && '💼'}
+                      {activeCategory === 'health' && '🏥'}
+                      {activeCategory === 'study' && '📚'}
+                    </span>
+                    <h3 className="category-content-title">
+                      {activeCategory === 'love' && '애정운 상세 분석'}
+                      {activeCategory === 'wealth' && '재물운 상세 분석'}
+                      {activeCategory === 'career' && '직업운 상세 분석'}
+                      {activeCategory === 'health' && '건강운 상세 분석'}
+                      {activeCategory === 'study' && '학업운 상세 분석'}
+                    </h3>
+                  </div>
+                  <div className="category-content-body">
+                    {streamingText}
+                  </div>
+                  <StreamingIndicator />
+                </div>
+              )}
             </div>
           </>
         )}
