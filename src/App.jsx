@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback, lazy, Suspense } from 'react'
 import './App.css'
 import {
   saveToHistory,
@@ -12,6 +12,18 @@ import {
   convertToText,
   copyToClipboard
 } from './utils/storage'
+
+// 작은 컴포넌트는 직접 import
+import LoadingSpinner from './components/LoadingSpinner'
+import ErrorMessage from './components/ErrorMessage'
+import StreamingIndicator from './components/StreamingIndicator'
+import ResultActions from './components/ResultActions'
+
+// 큰 컴포넌트는 지연 로딩
+const BirthForm = lazy(() => import('./components/BirthForm'))
+const Sidebar = lazy(() => import('./components/Sidebar'))
+const SajuResult = lazy(() => import('./components/SajuResult'))
+const InterpretationResult = lazy(() => import('./components/InterpretationResult'))
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
@@ -38,7 +50,7 @@ function App() {
   const [history, setHistory] = useState([]);
   const [bookmarks, setBookmarks] = useState([]);
   const [showSidebar, setShowSidebar] = useState(false);
-  const [sidebarTab, setSidebarTab] = useState('history'); // 'history' or 'bookmarks'
+  const [sidebarTab, setSidebarTab] = useState('history');
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
 
@@ -48,22 +60,20 @@ function App() {
     setBookmarks(getBookmarks());
   }, []);
 
-  const handleInputChange = (e) => {
+  // 메모이제이션된 핸들러들
+  const handleInputChange = useCallback((e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
       [name]: value
     }));
-  };
+  }, []);
 
-  const handleStreamingAnalysis = async (birthInfo) => {
+  const handleStreamingAnalysis = useCallback(async (birthInfo) => {
     try {
-      // 1단계: 사주 계산
       const calculateResponse = await fetch(`${API_BASE_URL}/api/v1/calculate`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(birthInfo)
       });
 
@@ -74,16 +84,11 @@ function App() {
 
       const sajuResult = await calculateResponse.json();
 
-      // 결과에 사주 정보 먼저 설정
       setResult({
         saju_result: sajuResult,
-        interpretation: {
-          interpretation: '',
-          topics_covered: []
-        }
+        interpretation: { interpretation: '', topics_covered: [] }
       });
 
-      // 2단계: 스트리밍 해석
       setIsStreaming(true);
       setStreamingText('');
 
@@ -91,9 +96,7 @@ function App() {
 
       const streamResponse = await fetch(`${API_BASE_URL}/api/v1/interpret/stream`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           saju_result: sajuResult,
           question: formData.question || '전체적인 운세를 알려주세요',
@@ -113,7 +116,6 @@ function App() {
 
       while (true) {
         const { done, value } = await reader.read();
-
         if (done) break;
 
         const chunk = decoder.decode(value, { stream: true });
@@ -121,39 +123,36 @@ function App() {
         setStreamingText(accumulatedText);
       }
 
-      // 스트리밍 완료 후 최종 결과 설정
       const finalResult = {
         saju_result: sajuResult,
-        interpretation: {
-          interpretation: accumulatedText,
-          topics_covered: []
-        }
+        interpretation: { interpretation: accumulatedText, topics_covered: [] }
       };
       setResult(finalResult);
-
-      // 히스토리에 저장
-      saveResultToHistory(finalResult, birthInfo);
+      saveToHistory({
+        birth_info: birthInfo,
+        saju_result: sajuResult,
+        interpretation: { interpretation: accumulatedText, topics_covered: [] },
+        question: formData.question
+      });
+      setHistory(getHistory());
 
     } catch (err) {
       if (err.name === 'AbortError') {
         setError('스트리밍이 취소되었습니다.');
       } else {
         setError(err.message);
-        console.error('Error:', err);
       }
     } finally {
       setIsStreaming(false);
       setLoading(false);
     }
-  };
+  }, [formData.question]);
 
-  const handleNormalAnalysis = async (birthInfo) => {
+  const handleNormalAnalysis = useCallback(async (birthInfo) => {
     try {
       const response = await fetch(`${API_BASE_URL}/api/v1/full-analysis`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           birth_info: birthInfo,
           question: formData.question || '전체적인 운세를 알려주세요',
@@ -169,18 +168,21 @@ function App() {
 
       const data = await response.json();
       setResult(data);
-
-      // 히스토리에 저장
-      saveResultToHistory(data, birthInfo);
+      saveToHistory({
+        birth_info: birthInfo,
+        saju_result: data.saju_result,
+        interpretation: data.interpretation,
+        question: formData.question
+      });
+      setHistory(getHistory());
     } catch (err) {
       setError(err.message);
-      console.error('Error:', err);
     } finally {
       setLoading(false);
     }
-  };
+  }, [formData.question]);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = useCallback(async (e) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
@@ -201,34 +203,20 @@ function App() {
     } else {
       await handleNormalAnalysis(birthInfo);
     }
-  };
+  }, [formData, useStreaming, handleStreamingAnalysis, handleNormalAnalysis]);
 
-  const handleCancelStreaming = () => {
+  const handleCancelStreaming = useCallback(() => {
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
     }
-  };
+  }, []);
 
-  // 결과를 히스토리에 저장
-  const saveResultToHistory = (resultData, birthInfo) => {
-    const historyData = {
-      birth_info: birthInfo,
-      saju_result: resultData.saju_result,
-      interpretation: resultData.interpretation,
-      question: formData.question
-    };
-    saveToHistory(historyData);
-    setHistory(getHistory());
-  };
-
-  // 북마크 추가/삭제
-  const handleToggleBookmark = () => {
+  const handleToggleBookmark = useCallback(() => {
     if (!result) return;
 
     const birthInfo = result.saju_result.birth_info;
 
     if (isBookmarked) {
-      // 북마크 삭제
       const bookmarkToDelete = bookmarks.find(bookmark =>
         bookmark.birthInfo.year === birthInfo.year &&
         bookmark.birthInfo.month === birthInfo.month &&
@@ -242,7 +230,6 @@ function App() {
         setIsBookmarked(false);
       }
     } else {
-      // 북마크 추가
       saveBookmark({
         birthInfo: birthInfo,
         sajuResult: result.saju_result,
@@ -251,10 +238,9 @@ function App() {
       setBookmarks(getBookmarks());
       setIsBookmarked(true);
     }
-  };
+  }, [result, bookmarks, isBookmarked]);
 
-  // 공유 (클립보드 복사)
-  const handleShare = async () => {
+  const handleShare = useCallback(async () => {
     if (!result) return;
 
     const text = convertToText(result);
@@ -264,10 +250,9 @@ function App() {
       setCopySuccess(true);
       setTimeout(() => setCopySuccess(false), 3000);
     }
-  };
+  }, [result]);
 
-  // 히스토리 항목 클릭
-  const handleHistoryItemClick = (item) => {
+  const handleHistoryItemClick = useCallback((item) => {
     setResult({
       saju_result: item.sajuResult,
       interpretation: item.interpretation
@@ -282,13 +267,10 @@ function App() {
       question: item.question || '전체 운세'
     });
     setShowSidebar(false);
-
-    // 북마크 상태 확인
     setIsBookmarked(checkIsBookmarked(item.birthInfo));
-  };
+  }, []);
 
-  // 북마크 항목 클릭
-  const handleBookmarkItemClick = (item) => {
+  const handleBookmarkItemClick = useCallback((item) => {
     setResult({
       saju_result: item.sajuResult,
       interpretation: item.interpretation
@@ -304,32 +286,28 @@ function App() {
     });
     setShowSidebar(false);
     setIsBookmarked(true);
-  };
+  }, []);
 
-  // 히스토리 항목 삭제
-  const handleDeleteHistory = (id) => {
+  const handleDeleteHistory = useCallback((id) => {
     deleteHistoryItem(id);
     setHistory(getHistory());
-  };
+  }, []);
 
-  // 전체 히스토리 삭제
-  const handleClearHistory = () => {
+  const handleClearHistory = useCallback(() => {
     if (window.confirm('전체 히스토리를 삭제하시겠습니까?')) {
       clearHistory();
       setHistory([]);
     }
-  };
+  }, []);
 
-  // 북마크 삭제
-  const handleDeleteBookmark = (id) => {
+  const handleDeleteBookmark = useCallback((id) => {
     deleteBookmark(id);
     setBookmarks(getBookmarks());
 
-    // 현재 결과가 삭제된 북마크인지 확인
     if (result && result.saju_result.birth_info) {
       setIsBookmarked(checkIsBookmarked(result.saju_result.birth_info));
     }
-  };
+  }, [result]);
 
   // 결과가 변경될 때 북마크 상태 확인
   useEffect(() => {
@@ -342,109 +320,21 @@ function App() {
 
   return (
     <div className="app">
-      {/* 히스토리/북마크 사이드바 */}
-      {showSidebar && (
-        <div className="sidebar-overlay" onClick={() => setShowSidebar(false)}>
-          <div className="sidebar" onClick={(e) => e.stopPropagation()}>
-            <div className="sidebar-header">
-              <div className="sidebar-tabs">
-                <button
-                  className={`sidebar-tab ${sidebarTab === 'history' ? 'active' : ''}`}
-                  onClick={() => setSidebarTab('history')}
-                >
-                  📜 히스토리 ({history.length})
-                </button>
-                <button
-                  className={`sidebar-tab ${sidebarTab === 'bookmarks' ? 'active' : ''}`}
-                  onClick={() => setSidebarTab('bookmarks')}
-                >
-                  ⭐ 북마크 ({bookmarks.length})
-                </button>
-              </div>
-              <button className="sidebar-close" onClick={() => setShowSidebar(false)}>
-                ✕
-              </button>
-            </div>
-
-            <div className="sidebar-content">
-              {sidebarTab === 'history' ? (
-                <div className="history-list">
-                  {history.length === 0 ? (
-                    <p className="empty-message">아직 조회 내역이 없습니다</p>
-                  ) : (
-                    <>
-                      <div className="history-actions">
-                        <button onClick={handleClearHistory} className="clear-button">
-                          전체 삭제
-                        </button>
-                      </div>
-                      {history.map((item) => (
-                        <div key={item.id} className="history-item">
-                          <div
-                            className="history-item-content"
-                            onClick={() => handleHistoryItemClick(item)}
-                          >
-                            <div className="history-item-date">
-                              {new Date(item.timestamp).toLocaleString('ko-KR')}
-                            </div>
-                            <div className="history-item-info">
-                              {item.birthInfo.year}년 {item.birthInfo.month}월{' '}
-                              {item.birthInfo.day}일 {item.birthInfo.hour}시
-                            </div>
-                            <div className="history-item-question">{item.question}</div>
-                          </div>
-                          <button
-                            className="history-item-delete"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDeleteHistory(item.id);
-                            }}
-                          >
-                            🗑️
-                          </button>
-                        </div>
-                      ))}
-                    </>
-                  )}
-                </div>
-              ) : (
-                <div className="bookmarks-list">
-                  {bookmarks.length === 0 ? (
-                    <p className="empty-message">저장된 북마크가 없습니다</p>
-                  ) : (
-                    bookmarks.map((item) => (
-                      <div key={item.id} className="bookmark-item">
-                        <div
-                          className="bookmark-item-content"
-                          onClick={() => handleBookmarkItemClick(item)}
-                        >
-                          <div className="bookmark-item-name">{item.name}</div>
-                          <div className="bookmark-item-info">
-                            {item.birthInfo.year}년 {item.birthInfo.month}월{' '}
-                            {item.birthInfo.day}일 {item.birthInfo.hour}시
-                          </div>
-                          <div className="bookmark-item-date">
-                            {new Date(item.timestamp).toLocaleDateString('ko-KR')}
-                          </div>
-                        </div>
-                        <button
-                          className="bookmark-item-delete"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDeleteBookmark(item.id);
-                          }}
-                        >
-                          🗑️
-                        </button>
-                      </div>
-                    ))
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
+      <Suspense fallback={<div>Loading...</div>}>
+        <Sidebar
+          show={showSidebar}
+          onClose={() => setShowSidebar(false)}
+          tab={sidebarTab}
+          onTabChange={setSidebarTab}
+          history={history}
+          bookmarks={bookmarks}
+          onHistoryItemClick={handleHistoryItemClick}
+          onBookmarkItemClick={handleBookmarkItemClick}
+          onDeleteHistory={handleDeleteHistory}
+          onDeleteBookmark={handleDeleteBookmark}
+          onClearHistory={handleClearHistory}
+        />
+      </Suspense>
 
       <header className="app-header">
         <div className="header-content">
@@ -460,289 +350,47 @@ function App() {
       </header>
 
       <main className="app-main">
-        <form onSubmit={handleSubmit} className="birth-form">
-          <h2>생년월일시 입력</h2>
+        <Suspense fallback={<LoadingSpinner message="폼 로딩 중..." />}>
+          <BirthForm
+            formData={formData}
+            onInputChange={handleInputChange}
+            onSubmit={handleSubmit}
+            loading={loading}
+            isStreaming={isStreaming}
+            useStreaming={useStreaming}
+            onStreamingToggle={(e) => setUseStreaming(e.target.checked)}
+            currentYear={currentYear}
+          />
+        </Suspense>
 
-          <div className="form-row">
-            <div className="form-group">
-              <label htmlFor="year">출생 연도 (양력)</label>
-              <input
-                type="number"
-                id="year"
-                name="year"
-                value={formData.year}
-                onChange={handleInputChange}
-                min="1900"
-                max={currentYear}
-                required
-                placeholder="예: 1990"
-              />
-            </div>
+        {loading && !isStreaming && <LoadingSpinner />}
 
-            <div className="form-group">
-              <label htmlFor="month">출생 월</label>
-              <input
-                type="number"
-                id="month"
-                name="month"
-                value={formData.month}
-                onChange={handleInputChange}
-                min="1"
-                max="12"
-                required
-                placeholder="1-12"
-              />
-            </div>
+        {isStreaming && <StreamingIndicator onCancel={handleCancelStreaming} />}
 
-            <div className="form-group">
-              <label htmlFor="day">출생 일</label>
-              <input
-                type="number"
-                id="day"
-                name="day"
-                value={formData.day}
-                onChange={handleInputChange}
-                min="1"
-                max="31"
-                required
-                placeholder="1-31"
-              />
-            </div>
-          </div>
-
-          <div className="form-row">
-            <div className="form-group">
-              <label htmlFor="hour">출생 시</label>
-              <input
-                type="number"
-                id="hour"
-                name="hour"
-                value={formData.hour}
-                onChange={handleInputChange}
-                min="0"
-                max="23"
-                required
-                placeholder="0-23"
-              />
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="minute">출생 분</label>
-              <input
-                type="number"
-                id="minute"
-                name="minute"
-                value={formData.minute}
-                onChange={handleInputChange}
-                min="0"
-                max="59"
-                placeholder="0-59"
-              />
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="gender">성별</label>
-              <select
-                id="gender"
-                name="gender"
-                value={formData.gender}
-                onChange={handleInputChange}
-              >
-                <option value="male">남성</option>
-                <option value="female">여성</option>
-              </select>
-            </div>
-          </div>
-
-          <div className="form-group full-width">
-            <label htmlFor="question">질문 (선택사항)</label>
-            <input
-              type="text"
-              id="question"
-              name="question"
-              value={formData.question}
-              onChange={handleInputChange}
-              placeholder="예: 제 연애운은 어떤가요?"
-            />
-            <small>특정 주제를 물어보거나 비워두면 전체 운세를 분석합니다.</small>
-          </div>
-
-          <div className="streaming-toggle">
-            <label className="toggle-label">
-              <input
-                type="checkbox"
-                checked={useStreaming}
-                onChange={(e) => setUseStreaming(e.target.checked)}
-                className="toggle-checkbox"
-              />
-              <span className="toggle-switch"></span>
-              <span className="toggle-text">
-                🔄 실시간 스트리밍 모드
-                <small>AI 해석을 실시간으로 확인합니다</small>
-              </span>
-            </label>
-          </div>
-
-          <button type="submit" className="submit-button" disabled={loading}>
-            {loading ? (isStreaming ? '해석 생성 중...' : '분석 중...') : '사주 풀이 시작'}
-          </button>
-        </form>
-
-        {loading && !isStreaming && (
-          <div className="loading">
-            <div className="spinner"></div>
-            <p>사주팔자를 계산하고 해석하는 중입니다...</p>
-          </div>
-        )}
-
-        {isStreaming && (
-          <div className="streaming-container">
-            <div className="streaming-header">
-              <span className="streaming-indicator">
-                <span className="pulse"></span>
-                실시간 해석 생성 중...
-              </span>
-              <button onClick={handleCancelStreaming} className="cancel-button">
-                중단
-              </button>
-            </div>
-          </div>
-        )}
-
-        {error && (
-          <div className="error-message">
-            <h3>⚠️ 오류가 발생했습니다</h3>
-            <p>{error}</p>
-          </div>
-        )}
+        {error && <ErrorMessage error={error} />}
 
         {result && (
           <>
-            <div className="result-actions">
-              <button
-                className={`bookmark-button ${isBookmarked ? 'bookmarked' : ''}`}
-                onClick={handleToggleBookmark}
-                title={isBookmarked ? '북마크 삭제' : '북마크 추가'}
-              >
-                {isBookmarked ? '⭐ 북마크됨' : '☆ 북마크'}
-              </button>
-              <button
-                className="share-button"
-                onClick={handleShare}
-                title="결과 복사"
-              >
-                📋 {copySuccess ? '복사됨!' : '결과 복사'}
-              </button>
-            </div>
+            <ResultActions
+              isBookmarked={isBookmarked}
+              onToggleBookmark={handleToggleBookmark}
+              onShare={handleShare}
+              copySuccess={copySuccess}
+            />
 
             <div className="result-container">
-              <div className="saju-result">
-                <h2>📋 사주팔자</h2>
+              <Suspense fallback={<LoadingSpinner message="결과 로딩 중..." />}>
+                <SajuResult sajuResult={result.saju_result} />
+              </Suspense>
 
-              <div className="pillars">
-                <div className="pillar">
-                  <h3>년주</h3>
-                  <div className="pillar-chars">
-                    <span className="heavenly-stem">{result.saju_result.year_pillar.heavenly_stem}</span>
-                    <span className="earthly-branch">{result.saju_result.year_pillar.earthly_branch}</span>
-                  </div>
-                </div>
-
-                <div className="pillar">
-                  <h3>월주</h3>
-                  <div className="pillar-chars">
-                    <span className="heavenly-stem">{result.saju_result.month_pillar.heavenly_stem}</span>
-                    <span className="earthly-branch">{result.saju_result.month_pillar.earthly_branch}</span>
-                  </div>
-                </div>
-
-                <div className="pillar">
-                  <h3>일주</h3>
-                  <div className="pillar-chars">
-                    <span className="heavenly-stem">{result.saju_result.day_pillar.heavenly_stem}</span>
-                    <span className="earthly-branch">{result.saju_result.day_pillar.earthly_branch}</span>
-                  </div>
-                </div>
-
-                <div className="pillar">
-                  <h3>시주</h3>
-                  <div className="pillar-chars">
-                    <span className="heavenly-stem">{result.saju_result.hour_pillar.heavenly_stem}</span>
-                    <span className="earthly-branch">{result.saju_result.hour_pillar.earthly_branch}</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="analysis-sections">
-                <div className="analysis-section">
-                  <h3>🔥 오행 분석</h3>
-                  <div className="elements">
-                    <div className="element">
-                      <span className="element-name">목(木)</span>
-                      <span className="element-value">{result.saju_result.five_elements.wood}</span>
-                    </div>
-                    <div className="element">
-                      <span className="element-name">화(火)</span>
-                      <span className="element-value">{result.saju_result.five_elements.fire}</span>
-                    </div>
-                    <div className="element">
-                      <span className="element-name">토(土)</span>
-                      <span className="element-value">{result.saju_result.five_elements.earth}</span>
-                    </div>
-                    <div className="element">
-                      <span className="element-name">금(金)</span>
-                      <span className="element-value">{result.saju_result.five_elements.metal}</span>
-                    </div>
-                    <div className="element">
-                      <span className="element-name">수(水)</span>
-                      <span className="element-value">{result.saju_result.five_elements.water}</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="analysis-section">
-                  <h3>⭐ 십성 분석</h3>
-                  <div className="ten-gods">
-                    {Object.entries(result.saju_result.ten_gods).map(([key, value]) => (
-                      value > 0 && (
-                        <div key={key} className="ten-god-item">
-                          <span className="ten-god-name">{key}</span>
-                          <span className="ten-god-value">{value}</span>
-                        </div>
-                      )
-                    ))}
-                  </div>
-                </div>
-              </div>
+              <Suspense fallback={<LoadingSpinner message="해석 로딩 중..." />}>
+                <InterpretationResult
+                  interpretation={result.interpretation}
+                  isStreaming={isStreaming}
+                  streamingText={streamingText}
+                />
+              </Suspense>
             </div>
-
-            <div className="interpretation-result">
-              <h2>🤖 AI 해석</h2>
-              {isStreaming ? (
-                <div className="interpretation-content streaming">
-                  <p className="streaming-text">{streamingText}<span className="cursor">|</span></p>
-                </div>
-              ) : (
-                <>
-                  <div className="interpretation-content">
-                    {result.interpretation.interpretation.split('\n').map((paragraph, index) => (
-                      paragraph.trim() && <p key={index}>{paragraph}</p>
-                    ))}
-                  </div>
-                  {result.interpretation.topics_covered && result.interpretation.topics_covered.length > 0 && (
-                    <div className="topics-covered">
-                      <h4>다룬 주제</h4>
-                      <div className="topics-list">
-                        {result.interpretation.topics_covered.map((topic, index) => (
-                          <span key={index} className="topic-tag">{topic}</span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </>
-              )}
-            </div>
-          </div>
           </>
         )}
       </main>
