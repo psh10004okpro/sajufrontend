@@ -40,6 +40,11 @@ function App() {
     question: '전체적인 운세를 알려주세요'
   });
 
+  // Quick Wins 상태
+  const [solarLunar, setSolarLunar] = useState('solar'); // 'solar' or 'lunar'
+  const [timeUnknown, setTimeUnknown] = useState(false);
+  const [showHanja, setShowHanja] = useState(false); // 한자 표시 옵션
+
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -73,6 +78,23 @@ function App() {
       ...prev,
       [name]: value
     }));
+  }, []);
+
+  const handleSolarLunarChange = useCallback((type) => {
+    setSolarLunar(type);
+  }, []);
+
+  const handleTimeUnknownChange = useCallback((e) => {
+    const checked = e.target.checked;
+    setTimeUnknown(checked);
+    if (checked) {
+      // 시간 모름 체크 시 정오(12시)로 설정
+      setFormData(prev => ({
+        ...prev,
+        hour: '12',
+        minute: '0'
+      }));
+    }
   }, []);
 
   const handleStreamingAnalysis = useCallback(async (birthInfo) => {
@@ -379,7 +401,9 @@ function App() {
             <h1>🔮 사주 풀이</h1>
             <p>Claude AI 기반 사주팔자 계산 및 해석</p>
           </div>
-          <div className="header-spacer"></div>
+          <button className="hanja-toggle-button" onClick={() => setShowHanja(!showHanja)}>
+            {showHanja ? '🔤 한글' : '㊥ 漢字'}
+          </button>
         </div>
       </header>
 
@@ -394,6 +418,10 @@ function App() {
             useStreaming={useStreaming}
             onStreamingToggle={(e) => setUseStreaming(e.target.checked)}
             currentYear={currentYear}
+            solarLunar={solarLunar}
+            onSolarLunarChange={handleSolarLunarChange}
+            timeUnknown={timeUnknown}
+            onTimeUnknownChange={handleTimeUnknownChange}
           />
         </Suspense>
 
@@ -415,7 +443,7 @@ function App() {
 
             <div className="result-container">
               <Suspense fallback={<LoadingSpinner message="결과 로딩 중..." />}>
-                <SajuResult sajuResult={result.saju_result} />
+                <SajuResult sajuResult={result.saju_result} showHanja={showHanja} />
               </Suspense>
 
               <Suspense fallback={<LoadingSpinner message="해석 로딩 중..." />}>

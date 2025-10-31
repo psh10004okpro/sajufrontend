@@ -8,15 +8,37 @@ const BirthForm = React.memo(({
   isStreaming,
   useStreaming,
   onStreamingToggle,
-  currentYear
+  currentYear,
+  solarLunar,
+  onSolarLunarChange,
+  timeUnknown,
+  onTimeUnknownChange
 }) => {
   return (
     <form onSubmit={onSubmit} className="birth-form">
       <h2>생년월일시 입력</h2>
 
+      {/* 음력/양력 토글 */}
+      <div className="calendar-type-toggle">
+        <button
+          type="button"
+          className={solarLunar === 'solar' ? 'active' : ''}
+          onClick={() => onSolarLunarChange('solar')}
+        >
+          양력
+        </button>
+        <button
+          type="button"
+          className={solarLunar === 'lunar' ? 'active' : ''}
+          onClick={() => onSolarLunarChange('lunar')}
+        >
+          음력
+        </button>
+      </div>
+
       <div className="form-row">
         <div className="form-group">
-          <label htmlFor="year">출생 연도 (양력)</label>
+          <label htmlFor="year">출생 연도 {solarLunar === 'solar' ? '(양력)' : '(음력)'}</label>
           <input
             type="number"
             id="year"
@@ -72,7 +94,8 @@ const BirthForm = React.memo(({
             onChange={onInputChange}
             min="0"
             max="23"
-            required
+            required={!timeUnknown}
+            disabled={timeUnknown}
             placeholder="0-23"
           />
         </div>
@@ -87,6 +110,7 @@ const BirthForm = React.memo(({
             onChange={onInputChange}
             min="0"
             max="59"
+            disabled={timeUnknown}
             placeholder="0-59"
           />
         </div>
@@ -103,6 +127,22 @@ const BirthForm = React.memo(({
             <option value="female">여성</option>
           </select>
         </div>
+      </div>
+
+      {/* 시간 모름 옵션 */}
+      <div className="time-unknown-option">
+        <label className="checkbox-label">
+          <input
+            type="checkbox"
+            checked={timeUnknown}
+            onChange={onTimeUnknownChange}
+            className="checkbox-input"
+          />
+          <span className="checkbox-text">
+            ⏰ 태어난 시간을 모릅니다
+            <small>시간을 모를 경우 정오(12시)를 기준으로 계산됩니다</small>
+          </span>
+        </label>
       </div>
 
       <div className="form-group full-width">
