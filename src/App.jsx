@@ -1,5 +1,17 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import './App.css'
+import {
+  saveToHistory,
+  getHistory,
+  deleteHistoryItem,
+  clearHistory,
+  saveBookmark,
+  getBookmarks,
+  deleteBookmark,
+  isBookmarked as checkIsBookmarked,
+  convertToText,
+  copyToClipboard
+} from './utils/storage'
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
@@ -21,6 +33,20 @@ function App() {
   const [isStreaming, setIsStreaming] = useState(false);
   const [streamingText, setStreamingText] = useState('');
   const abortControllerRef = useRef(null);
+
+  // 히스토리 & 북마크 상태
+  const [history, setHistory] = useState([]);
+  const [bookmarks, setBookmarks] = useState([]);
+  const [showSidebar, setShowSidebar] = useState(false);
+  const [sidebarTab, setSidebarTab] = useState('history'); // 'history' or 'bookmarks'
+  const [isBookmarked, setIsBookmarked] = useState(false);
+  const [copySuccess, setCopySuccess] = useState(false);
+
+  // 초기 로드
+  useEffect(() => {
+    setHistory(getHistory());
+    setBookmarks(getBookmarks());
+  }, []);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -96,13 +122,17 @@ function App() {
       }
 
       // 스트리밍 완료 후 최종 결과 설정
-      setResult(prev => ({
-        ...prev,
+      const finalResult = {
+        saju_result: sajuResult,
         interpretation: {
           interpretation: accumulatedText,
           topics_covered: []
         }
-      }));
+      };
+      setResult(finalResult);
+
+      // 히스토리에 저장
+      saveResultToHistory(finalResult, birthInfo);
 
     } catch (err) {
       if (err.name === 'AbortError') {
@@ -139,6 +169,9 @@ function App() {
 
       const data = await response.json();
       setResult(data);
+
+      // 히스토리에 저장
+      saveResultToHistory(data, birthInfo);
     } catch (err) {
       setError(err.message);
       console.error('Error:', err);
@@ -176,13 +209,254 @@ function App() {
     }
   };
 
+  // 결과를 히스토리에 저장
+  const saveResultToHistory = (resultData, birthInfo) => {
+    const historyData = {
+      birth_info: birthInfo,
+      saju_result: resultData.saju_result,
+      interpretation: resultData.interpretation,
+      question: formData.question
+    };
+    saveToHistory(historyData);
+    setHistory(getHistory());
+  };
+
+  // 북마크 추가/삭제
+  const handleToggleBookmark = () => {
+    if (!result) return;
+
+    const birthInfo = result.saju_result.birth_info;
+
+    if (isBookmarked) {
+      // 북마크 삭제
+      const bookmarkToDelete = bookmarks.find(bookmark =>
+        bookmark.birthInfo.year === birthInfo.year &&
+        bookmark.birthInfo.month === birthInfo.month &&
+        bookmark.birthInfo.day === birthInfo.day &&
+        bookmark.birthInfo.hour === birthInfo.hour &&
+        bookmark.birthInfo.gender === birthInfo.gender
+      );
+      if (bookmarkToDelete) {
+        deleteBookmark(bookmarkToDelete.id);
+        setBookmarks(getBookmarks());
+        setIsBookmarked(false);
+      }
+    } else {
+      // 북마크 추가
+      saveBookmark({
+        birthInfo: birthInfo,
+        sajuResult: result.saju_result,
+        interpretation: result.interpretation
+      });
+      setBookmarks(getBookmarks());
+      setIsBookmarked(true);
+    }
+  };
+
+  // 공유 (클립보드 복사)
+  const handleShare = async () => {
+    if (!result) return;
+
+    const text = convertToText(result);
+    const success = await copyToClipboard(text);
+
+    if (success) {
+      setCopySuccess(true);
+      setTimeout(() => setCopySuccess(false), 3000);
+    }
+  };
+
+  // 히스토리 항목 클릭
+  const handleHistoryItemClick = (item) => {
+    setResult({
+      saju_result: item.sajuResult,
+      interpretation: item.interpretation
+    });
+    setFormData({
+      year: item.birthInfo.year.toString(),
+      month: item.birthInfo.month.toString(),
+      day: item.birthInfo.day.toString(),
+      hour: item.birthInfo.hour.toString(),
+      minute: item.birthInfo.minute?.toString() || '0',
+      gender: item.birthInfo.gender,
+      question: item.question || '전체 운세'
+    });
+    setShowSidebar(false);
+
+    // 북마크 상태 확인
+    setIsBookmarked(checkIsBookmarked(item.birthInfo));
+  };
+
+  // 북마크 항목 클릭
+  const handleBookmarkItemClick = (item) => {
+    setResult({
+      saju_result: item.sajuResult,
+      interpretation: item.interpretation
+    });
+    setFormData({
+      year: item.birthInfo.year.toString(),
+      month: item.birthInfo.month.toString(),
+      day: item.birthInfo.day.toString(),
+      hour: item.birthInfo.hour.toString(),
+      minute: item.birthInfo.minute?.toString() || '0',
+      gender: item.birthInfo.gender,
+      question: '전체 운세'
+    });
+    setShowSidebar(false);
+    setIsBookmarked(true);
+  };
+
+  // 히스토리 항목 삭제
+  const handleDeleteHistory = (id) => {
+    deleteHistoryItem(id);
+    setHistory(getHistory());
+  };
+
+  // 전체 히스토리 삭제
+  const handleClearHistory = () => {
+    if (window.confirm('전체 히스토리를 삭제하시겠습니까?')) {
+      clearHistory();
+      setHistory([]);
+    }
+  };
+
+  // 북마크 삭제
+  const handleDeleteBookmark = (id) => {
+    deleteBookmark(id);
+    setBookmarks(getBookmarks());
+
+    // 현재 결과가 삭제된 북마크인지 확인
+    if (result && result.saju_result.birth_info) {
+      setIsBookmarked(checkIsBookmarked(result.saju_result.birth_info));
+    }
+  };
+
+  // 결과가 변경될 때 북마크 상태 확인
+  useEffect(() => {
+    if (result && result.saju_result.birth_info) {
+      setIsBookmarked(checkIsBookmarked(result.saju_result.birth_info));
+    }
+  }, [result]);
+
   const currentYear = new Date().getFullYear();
 
   return (
     <div className="app">
+      {/* 히스토리/북마크 사이드바 */}
+      {showSidebar && (
+        <div className="sidebar-overlay" onClick={() => setShowSidebar(false)}>
+          <div className="sidebar" onClick={(e) => e.stopPropagation()}>
+            <div className="sidebar-header">
+              <div className="sidebar-tabs">
+                <button
+                  className={`sidebar-tab ${sidebarTab === 'history' ? 'active' : ''}`}
+                  onClick={() => setSidebarTab('history')}
+                >
+                  📜 히스토리 ({history.length})
+                </button>
+                <button
+                  className={`sidebar-tab ${sidebarTab === 'bookmarks' ? 'active' : ''}`}
+                  onClick={() => setSidebarTab('bookmarks')}
+                >
+                  ⭐ 북마크 ({bookmarks.length})
+                </button>
+              </div>
+              <button className="sidebar-close" onClick={() => setShowSidebar(false)}>
+                ✕
+              </button>
+            </div>
+
+            <div className="sidebar-content">
+              {sidebarTab === 'history' ? (
+                <div className="history-list">
+                  {history.length === 0 ? (
+                    <p className="empty-message">아직 조회 내역이 없습니다</p>
+                  ) : (
+                    <>
+                      <div className="history-actions">
+                        <button onClick={handleClearHistory} className="clear-button">
+                          전체 삭제
+                        </button>
+                      </div>
+                      {history.map((item) => (
+                        <div key={item.id} className="history-item">
+                          <div
+                            className="history-item-content"
+                            onClick={() => handleHistoryItemClick(item)}
+                          >
+                            <div className="history-item-date">
+                              {new Date(item.timestamp).toLocaleString('ko-KR')}
+                            </div>
+                            <div className="history-item-info">
+                              {item.birthInfo.year}년 {item.birthInfo.month}월{' '}
+                              {item.birthInfo.day}일 {item.birthInfo.hour}시
+                            </div>
+                            <div className="history-item-question">{item.question}</div>
+                          </div>
+                          <button
+                            className="history-item-delete"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteHistory(item.id);
+                            }}
+                          >
+                            🗑️
+                          </button>
+                        </div>
+                      ))}
+                    </>
+                  )}
+                </div>
+              ) : (
+                <div className="bookmarks-list">
+                  {bookmarks.length === 0 ? (
+                    <p className="empty-message">저장된 북마크가 없습니다</p>
+                  ) : (
+                    bookmarks.map((item) => (
+                      <div key={item.id} className="bookmark-item">
+                        <div
+                          className="bookmark-item-content"
+                          onClick={() => handleBookmarkItemClick(item)}
+                        >
+                          <div className="bookmark-item-name">{item.name}</div>
+                          <div className="bookmark-item-info">
+                            {item.birthInfo.year}년 {item.birthInfo.month}월{' '}
+                            {item.birthInfo.day}일 {item.birthInfo.hour}시
+                          </div>
+                          <div className="bookmark-item-date">
+                            {new Date(item.timestamp).toLocaleDateString('ko-KR')}
+                          </div>
+                        </div>
+                        <button
+                          className="bookmark-item-delete"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteBookmark(item.id);
+                          }}
+                        >
+                          🗑️
+                        </button>
+                      </div>
+                    ))
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       <header className="app-header">
-        <h1>🔮 사주 풀이</h1>
-        <p>Claude AI 기반 사주팔자 계산 및 해석</p>
+        <div className="header-content">
+          <button className="history-button" onClick={() => setShowSidebar(true)}>
+            📜 히스토리
+          </button>
+          <div className="header-title">
+            <h1>🔮 사주 풀이</h1>
+            <p>Claude AI 기반 사주팔자 계산 및 해석</p>
+          </div>
+          <div className="header-spacer"></div>
+        </div>
       </header>
 
       <main className="app-main">
@@ -343,9 +617,27 @@ function App() {
         )}
 
         {result && (
-          <div className="result-container">
-            <div className="saju-result">
-              <h2>📋 사주팔자</h2>
+          <>
+            <div className="result-actions">
+              <button
+                className={`bookmark-button ${isBookmarked ? 'bookmarked' : ''}`}
+                onClick={handleToggleBookmark}
+                title={isBookmarked ? '북마크 삭제' : '북마크 추가'}
+              >
+                {isBookmarked ? '⭐ 북마크됨' : '☆ 북마크'}
+              </button>
+              <button
+                className="share-button"
+                onClick={handleShare}
+                title="결과 복사"
+              >
+                📋 {copySuccess ? '복사됨!' : '결과 복사'}
+              </button>
+            </div>
+
+            <div className="result-container">
+              <div className="saju-result">
+                <h2>📋 사주팔자</h2>
 
               <div className="pillars">
                 <div className="pillar">
@@ -451,6 +743,7 @@ function App() {
               )}
             </div>
           </div>
+          </>
         )}
       </main>
 
