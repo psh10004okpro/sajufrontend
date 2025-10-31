@@ -31,6 +31,7 @@ const SaeunCard = lazy(() => import('./components/SaeunCard'))
 const LifeStageAnalysis = lazy(() => import('./components/LifeStageAnalysis'))
 const CategoryTabs = lazy(() => import('./components/CategoryTabs'))
 const OhangChart = lazy(() => import('./components/OhangChart'))
+const TwelveUnseong = lazy(() => import('./components/TwelveUnseong'))
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
@@ -613,6 +614,22 @@ function App() {
                 <Suspense fallback={<LoadingSpinner message="오행 차트 로딩 중..." />}>
                   <OhangChart
                     fiveElements={result.saju_result.five_elements}
+                    showHanja={showHanja}
+                  />
+                </Suspense>
+              )}
+
+              {/* 12운성 */}
+              {result.saju_result.twelve_unseong && (
+                <Suspense fallback={<LoadingSpinner message="12운성 로딩 중..." />}>
+                  <TwelveUnseong
+                    twelveUnseong={result.saju_result.twelve_unseong}
+                    fourPillars={{
+                      year_pillar: result.saju_result.year_pillar,
+                      month_pillar: result.saju_result.month_pillar,
+                      day_pillar: result.saju_result.day_pillar,
+                      hour_pillar: result.saju_result.hour_pillar
+                    }}
                     showHanja={showHanja}
                   />
                 </Suspense>

@@ -1875,3 +1875,307 @@
     font-size: 0.8rem;
   }
 }
+
+/* ==================== 12운성 (12 Life Stages) ==================== */
+
+.twelve-unseong {
+  margin: 2rem 0;
+  padding: 2rem;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.twelve-unseong-header {
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.twelve-unseong-header h3 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.75rem;
+  color: #2c3e50;
+}
+
+.twelve-unseong-description {
+  margin: 0;
+  color: #7f8c8d;
+  font-size: 1rem;
+}
+
+/* 12운성 그리드 */
+.twelve-unseong-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin: 2rem 0;
+}
+
+.unseong-card {
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  border-radius: 12px;
+  border: 2px solid var(--unseong-color, #e0e0e0);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.unseong-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
+}
+
+.unseong-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.25rem;
+  background: var(--unseong-color, #667eea);
+  color: white;
+}
+
+.unseong-pillar-name {
+  font-weight: 700;
+  font-size: 1.1rem;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.unseong-pillar-chars {
+  font-size: 1.2rem;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 0.25rem 0.75rem;
+  border-radius: 8px;
+  backdrop-filter: blur(4px);
+}
+
+.unseong-card-body {
+  padding: 1.25rem;
+}
+
+.unseong-name-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+  gap: 0.5rem;
+}
+
+.unseong-name {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #2c3e50;
+}
+
+.unseong-strength-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  color: white;
+  font-size: 0.85rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.unseong-description {
+  margin: 0.5rem 0;
+  color: #5a6c7d;
+  font-size: 0.95rem;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.unseong-detail {
+  margin: 0.5rem 0 0 0;
+  color: #7f8c8d;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  border-left: 3px solid var(--unseong-color, #e0e0e0);
+  padding-left: 0.75rem;
+}
+
+/* 12운성 통계 */
+.twelve-unseong-stats {
+  margin: 2.5rem 0;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  border-radius: 12px;
+}
+
+.twelve-unseong-stats h4 {
+  margin: 0 0 1.5rem 0;
+  font-size: 1.3rem;
+  color: #2c3e50;
+  text-align: center;
+}
+
+.unseong-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1.5rem;
+}
+
+.unseong-stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1.5rem;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  text-align: center;
+  transition: transform 0.2s ease;
+}
+
+.unseong-stat-item:hover {
+  transform: scale(1.05);
+}
+
+.unseong-stat-label {
+  font-size: 0.9rem;
+  color: #7f8c8d;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.unseong-stat-value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #2c3e50;
+}
+
+.unseong-stat-value.strong {
+  color: #10b981;
+}
+
+.unseong-stat-value.medium {
+  color: #3b82f6;
+}
+
+.unseong-stat-value.weak {
+  color: #f59e0b;
+}
+
+.unseong-stat-desc {
+  font-size: 0.85rem;
+  color: #95a5a6;
+  margin-top: 0.25rem;
+}
+
+/* 12운성 설명 */
+.twelve-unseong-legend {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background: #f8f9fa;
+  border-radius: 12px;
+  border: 2px dashed #dee2e6;
+}
+
+.twelve-unseong-legend h4 {
+  margin: 0 0 1rem 0;
+  font-size: 1.2rem;
+  color: #2c3e50;
+}
+
+.twelve-unseong-legend p {
+  margin: 0 0 1rem 0;
+  color: #5a6c7d;
+  line-height: 1.6;
+}
+
+.unseong-cycle {
+  padding: 1rem;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.unseong-cycle strong {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #667eea;
+  font-size: 1rem;
+}
+
+.unseong-cycle-text {
+  display: block;
+  color: #5a6c7d;
+  line-height: 1.8;
+  font-size: 0.95rem;
+}
+
+/* 반응형 - 12운성 */
+@media (max-width: 768px) {
+  .twelve-unseong {
+    padding: 1.5rem;
+  }
+
+  .twelve-unseong-header h3 {
+    font-size: 1.5rem;
+  }
+
+  .twelve-unseong-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .unseong-card-header {
+    padding: 0.875rem 1rem;
+  }
+
+  .unseong-pillar-name {
+    font-size: 1rem;
+  }
+
+  .unseong-pillar-chars {
+    font-size: 1.1rem;
+  }
+
+  .unseong-name {
+    font-size: 1.1rem;
+  }
+
+  .unseong-stats-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .unseong-stat-item {
+    padding: 1rem;
+  }
+
+  .unseong-stat-value {
+    font-size: 1.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .twelve-unseong {
+    padding: 1rem;
+  }
+
+  .twelve-unseong-header h3 {
+    font-size: 1.3rem;
+  }
+
+  .unseong-card-body {
+    padding: 1rem;
+  }
+
+  .unseong-name {
+    font-size: 1rem;
+  }
+
+  .unseong-description {
+    font-size: 0.9rem;
+  }
+
+  .unseong-detail {
+    font-size: 0.85rem;
+  }
+
+  .unseong-stat-value {
+    font-size: 1.5rem;
+  }
+}
