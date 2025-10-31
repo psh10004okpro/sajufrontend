@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import TermTooltip from './TermTooltip';
 
-const TwelveUnseong = ({ twelveUnseong, fourPillars, showHanja }) => {
+const TwelveUnseong = React.memo(({ twelveUnseong, fourPillars, showHanja }) => {
   // 12운성별 한자, 색상, 설명
   const unseongInfo = {
     '장생': {
@@ -201,6 +201,8 @@ const TwelveUnseong = ({ twelveUnseong, fourPillars, showHanja }) => {
       </div>
     </div>
   );
-};
+});
+
+TwelveUnseong.displayName = 'TwelveUnseong';
 
 export default TwelveUnseong;

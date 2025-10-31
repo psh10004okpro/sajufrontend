@@ -1,7 +1,7 @@
-import { useMemo } from 'react';
+import React, { useMemo } from 'react';
 import TermTooltip from './TermTooltip';
 
-const CompatibilityResult = ({ compatibilityData, interpretation }) => {
+const CompatibilityResult = React.memo(({ compatibilityData, interpretation }) => {
   if (!compatibilityData) return null;
 
   const { overall_score, detailed_scores, strengths, weaknesses, advice } = compatibilityData;
@@ -178,6 +178,8 @@ const CompatibilityResult = ({ compatibilityData, interpretation }) => {
       </div>
     </div>
   );
-};
+});
+
+CompatibilityResult.displayName = 'CompatibilityResult';
 
 export default CompatibilityResult;

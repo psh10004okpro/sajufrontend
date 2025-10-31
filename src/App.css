@@ -1,4 +1,191 @@
-/* 전체 앱 레이아웃 */
+/* ========================================
+   접근성 (Accessibility)
+   ======================================== */
+
+/* 스크린 리더 전용 텍스트 (시각적으로 숨김) */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* 포커스 인디케이터 - 모든 인터랙티브 요소 */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[role="tab"]:focus-visible,
+[role="button"]:focus-visible {
+  outline: 3px solid #667eea;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* 체크박스와 라디오 버튼 포커스 */
+input[type="checkbox"]:focus-visible,
+input[type="radio"]:focus-visible {
+  outline: 3px solid #667eea;
+  outline-offset: 2px;
+}
+
+/* fieldset 스타일 리셋 (접근성을 위해 사용하지만 시각적으로는 폼과 동일) */
+fieldset {
+  border: none;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+
+fieldset legend.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* Skip to main content link (선택사항) */
+.skip-to-main {
+  position: absolute;
+  left: -9999px;
+  z-index: 999;
+}
+
+.skip-to-main:focus {
+  left: 50%;
+  transform: translateX(-50%);
+  top: 10px;
+  background: #667eea;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  text-decoration: none;
+}
+
+/* ========================================
+   애니메이션 (Animations)
+   ======================================== */
+
+/* Fade In 애니메이션 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Fade Out 애니메이션 */
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+}
+
+/* 슬라이드 인 애니메이션 */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* 모든 메인 콘텐츠에 페이드 인 적용 */
+.app-main > * {
+  animation: fadeIn 0.4s ease-out;
+}
+
+/* 탭 전환 애니메이션 */
+.mode-tab {
+  transition: all 0.3s ease;
+}
+
+.mode-tab:hover:not(.active) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.mode-tab.active {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 결과 카드 스태거 애니메이션 */
+.result-container > *:nth-child(1) {
+  animation: fadeIn 0.4s ease-out 0.1s both;
+}
+
+.result-container > *:nth-child(2) {
+  animation: fadeIn 0.4s ease-out 0.2s both;
+}
+
+.result-container > *:nth-child(3) {
+  animation: fadeIn 0.4s ease-out 0.3s both;
+}
+
+.result-container > *:nth-child(4) {
+  animation: fadeIn 0.4s ease-out 0.4s both;
+}
+
+/* 버튼 호버 애니메이션 */
+button {
+  transition: all 0.2s ease;
+}
+
+button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+/* 입력 필드 포커스 애니메이션 */
+input,
+select,
+textarea {
+  transition: all 0.2s ease;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  transform: scale(1.01);
+}
+
+/* 로딩 페이드 인 */
+.loading-spinner,
+.error-message {
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* ========================================
+   전체 앱 레이아웃
+   ======================================== */
+
 .app {
   min-height: 100vh;
   display: flex;

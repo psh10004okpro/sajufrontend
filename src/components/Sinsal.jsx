@@ -1,7 +1,7 @@
-import { useMemo } from 'react';
+import React, { useMemo } from 'react';
 import TermTooltip from './TermTooltip';
 
-const Sinsal = ({ sinsal }) => {
+const Sinsal = React.memo(({ sinsal }) => {
   if (!sinsal || !sinsal.sinsal_list || sinsal.sinsal_list.length === 0) {
     return (
       <div className="sinsal">
@@ -261,6 +261,8 @@ const Sinsal = ({ sinsal }) => {
       </div>
     </div>
   );
-};
+});
+
+Sinsal.displayName = 'Sinsal';
 
 export default Sinsal;

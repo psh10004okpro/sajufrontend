@@ -17,15 +17,26 @@ const BirthForm = React.memo(({
   onTimeUnknownChange
 }) => {
   return (
-    <form onSubmit={onSubmit} className="birth-form">
-      <h2>생년월일시 입력</h2>
+    <form
+      onSubmit={onSubmit}
+      className="birth-form"
+      aria-label="사주 정보 입력 폼"
+    >
+      <h2 id="form-title">생년월일시 입력</h2>
 
       {/* 음력/양력 토글 */}
-      <div className="calendar-type-toggle">
+      <div
+        className="calendar-type-toggle"
+        role="group"
+        aria-labelledby="calendar-type-label"
+      >
+        <span id="calendar-type-label" className="visually-hidden">달력 유형 선택</span>
         <button
           type="button"
           className={solarLunar === 'solar' ? 'active' : ''}
           onClick={() => onSolarLunarChange('solar')}
+          aria-pressed={solarLunar === 'solar'}
+          aria-label="양력 선택"
         >
           양력
         </button>
@@ -33,6 +44,8 @@ const BirthForm = React.memo(({
           type="button"
           className={solarLunar === 'lunar' ? 'active' : ''}
           onClick={() => onSolarLunarChange('lunar')}
+          aria-pressed={solarLunar === 'lunar'}
+          aria-label="음력 선택"
         >
           음력
         </button>
@@ -47,16 +60,18 @@ const BirthForm = React.memo(({
               checked={isLeapMonth}
               onChange={onLeapMonthChange}
               className="checkbox-input"
+              aria-describedby="leap-month-description"
             />
             <span className="checkbox-text">
               🌙 윤달입니다
-              <small>음력에서 윤달이 있는 달에 태어났을 경우 체크하세요</small>
+              <small id="leap-month-description">음력에서 윤달이 있는 달에 태어났을 경우 체크하세요</small>
             </span>
           </label>
         </div>
       )}
 
-      <div className="form-row">
+      <fieldset className="form-row">
+        <legend className="visually-hidden">출생 연월일</legend>
         <div className="form-group">
           <label htmlFor="year">출생 연도 {solarLunar === 'solar' ? '(양력)' : '(음력)'}</label>
           <input
@@ -68,6 +83,7 @@ const BirthForm = React.memo(({
             min="1900"
             max={currentYear}
             required
+            aria-required="true"
             placeholder="예: 1990"
           />
         </div>
@@ -83,6 +99,7 @@ const BirthForm = React.memo(({
             min="1"
             max="12"
             required
+            aria-required="true"
             placeholder="1-12"
           />
         </div>
@@ -98,12 +115,14 @@ const BirthForm = React.memo(({
             min="1"
             max="31"
             required
+            aria-required="true"
             placeholder="1-31"
           />
         </div>
-      </div>
+      </fieldset>
 
-      <div className="form-row">
+      <fieldset className="form-row">
+        <legend className="visually-hidden">출생 시간 및 성별</legend>
         <div className="form-group">
           <label htmlFor="hour">출생 시</label>
           <input
@@ -116,6 +135,8 @@ const BirthForm = React.memo(({
             max="23"
             required={!timeUnknown}
             disabled={timeUnknown}
+            aria-disabled={timeUnknown}
+            aria-required={!timeUnknown}
             placeholder="0-23"
           />
         </div>
@@ -131,6 +152,7 @@ const BirthForm = React.memo(({
             min="0"
             max="59"
             disabled={timeUnknown}
+            aria-disabled={timeUnknown}
             placeholder="0-59"
           />
         </div>
@@ -142,12 +164,13 @@ const BirthForm = React.memo(({
             name="gender"
             value={formData.gender}
             onChange={onInputChange}
+            aria-required="true"
           >
             <option value="male">남성</option>
             <option value="female">여성</option>
           </select>
         </div>
-      </div>
+      </fieldset>
 
       {/* 시간 모름 옵션 */}
       <div className="time-unknown-option">
@@ -157,10 +180,11 @@ const BirthForm = React.memo(({
             checked={timeUnknown}
             onChange={onTimeUnknownChange}
             className="checkbox-input"
+            aria-describedby="time-unknown-description"
           />
           <span className="checkbox-text">
             ⏰ 태어난 시간을 모릅니다
-            <small>시간을 모를 경우 정오(12시)를 기준으로 계산됩니다</small>
+            <small id="time-unknown-description">시간을 모를 경우 정오(12시)를 기준으로 계산됩니다</small>
           </span>
         </label>
       </div>
@@ -174,8 +198,9 @@ const BirthForm = React.memo(({
           value={formData.question}
           onChange={onInputChange}
           placeholder="예: 제 연애운은 어떤가요?"
+          aria-describedby="question-description"
         />
-        <small>특정 주제를 물어보거나 비워두면 전체 운세를 분석합니다.</small>
+        <small id="question-description">특정 주제를 물어보거나 비워두면 전체 운세를 분석합니다.</small>
       </div>
 
       <div className="streaming-toggle">
@@ -185,16 +210,25 @@ const BirthForm = React.memo(({
             checked={useStreaming}
             onChange={onStreamingToggle}
             className="toggle-checkbox"
+            role="switch"
+            aria-checked={useStreaming}
+            aria-describedby="streaming-description"
           />
-          <span className="toggle-switch"></span>
+          <span className="toggle-switch" aria-hidden="true"></span>
           <span className="toggle-text">
             🔄 실시간 스트리밍 모드
-            <small>AI 해석을 실시간으로 확인합니다</small>
+            <small id="streaming-description">AI 해석을 실시간으로 확인합니다</small>
           </span>
         </label>
       </div>
 
-      <button type="submit" className="submit-button" disabled={loading}>
+      <button
+        type="submit"
+        className="submit-button"
+        disabled={loading}
+        aria-busy={loading}
+        aria-live="polite"
+      >
         {loading ? (isStreaming ? '해석 생성 중...' : '분석 중...') : '사주 풀이 시작'}
       </button>
     </form>

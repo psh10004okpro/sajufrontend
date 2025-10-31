@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { elementHanja, elementColors } from '../utils/hanjaData';
 
-const OhangChart = ({ fiveElements, showHanja }) => {
+const OhangChart = React.memo(({ fiveElements, showHanja }) => {
   // 영문 키를 한글로 매핑
   const elementMapping = {
     wood: '목',
@@ -179,6 +179,8 @@ const OhangChart = ({ fiveElements, showHanja }) => {
       </div>
     </div>
   );
-};
+});
+
+OhangChart.displayName = 'OhangChart';
 
 export default OhangChart;

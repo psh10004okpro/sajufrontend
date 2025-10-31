@@ -595,29 +595,50 @@ function App() {
 
       <header className="app-header">
         <div className="header-content">
-          <button className="history-button" onClick={() => setShowSidebar(true)}>
+          <button
+            className="history-button"
+            onClick={() => setShowSidebar(true)}
+            aria-label="히스토리 열기"
+          >
             📜 히스토리
           </button>
           <div className="header-title">
             <h1>🔮 사주 풀이</h1>
             <p>Claude AI 기반 사주팔자 계산 및 해석</p>
             {/* 모드 선택 탭 */}
-            <div className="mode-tabs">
+            <div
+              className="mode-tabs"
+              role="tablist"
+              aria-label="사주 분석 모드 선택"
+            >
               <button
                 className={`mode-tab ${mode === 'saju' ? 'active' : ''}`}
                 onClick={() => setMode('saju')}
+                role="tab"
+                aria-selected={mode === 'saju'}
+                aria-controls="saju-panel"
+                id="saju-tab"
               >
                 📜 사주 보기
               </button>
               <button
                 className={`mode-tab ${mode === 'compatibility' ? 'active' : ''}`}
                 onClick={() => setMode('compatibility')}
+                role="tab"
+                aria-selected={mode === 'compatibility'}
+                aria-controls="compatibility-panel"
+                id="compatibility-tab"
               >
                 💕 궁합 보기
               </button>
             </div>
           </div>
-          <button className="hanja-toggle-button" onClick={() => setShowHanja(!showHanja)}>
+          <button
+            className="hanja-toggle-button"
+            onClick={() => setShowHanja(!showHanja)}
+            aria-label={showHanja ? '한글로 표시' : '한자로 표시'}
+            aria-pressed={showHanja}
+          >
             {showHanja ? '🔤 한글' : '㊥ 漢字'}
           </button>
         </div>
