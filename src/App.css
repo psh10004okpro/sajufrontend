@@ -435,6 +435,15 @@
   border-color: #667eea;
 }
 
+/* 윤달 옵션 */
+.leap-month-option {
+  margin: 1rem 0;
+  padding: 1rem;
+  background: #e3f2fd;
+  border-radius: 8px;
+  border-left: 4px solid #2196f3;
+}
+
 /* 시간 모름 옵션 */
 .time-unknown-option {
   margin: 1rem 0;

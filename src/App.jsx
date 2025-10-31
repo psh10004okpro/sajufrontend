@@ -45,6 +45,7 @@ function App() {
 
   // Quick Wins 상태
   const [solarLunar, setSolarLunar] = useState('solar'); // 'solar' or 'lunar'
+  const [isLeapMonth, setIsLeapMonth] = useState(false); // 윤달 여부
   const [timeUnknown, setTimeUnknown] = useState(false);
   const [showHanja, setShowHanja] = useState(false); // 한자 표시 옵션
 
@@ -85,6 +86,14 @@ function App() {
 
   const handleSolarLunarChange = useCallback((type) => {
     setSolarLunar(type);
+    // 양력으로 변경 시 윤달 체크 해제
+    if (type === 'solar') {
+      setIsLeapMonth(false);
+    }
+  }, []);
+
+  const handleLeapMonthChange = useCallback((e) => {
+    setIsLeapMonth(e.target.checked);
   }, []);
 
   const handleTimeUnknownChange = useCallback((e) => {
@@ -228,7 +237,7 @@ function App() {
       minute: parseInt(formData.minute) || 0,
       gender: formData.gender,
       is_lunar: solarLunar === 'lunar',
-      is_leap_month: false // 향후 추가 가능
+      is_leap_month: solarLunar === 'lunar' && isLeapMonth
     };
 
     if (useStreaming) {
@@ -236,7 +245,7 @@ function App() {
     } else {
       await handleNormalAnalysis(birthInfo);
     }
-  }, [formData, useStreaming, solarLunar, handleStreamingAnalysis, handleNormalAnalysis]);
+  }, [formData, useStreaming, solarLunar, isLeapMonth, handleStreamingAnalysis, handleNormalAnalysis]);
 
   const handleCancelStreaming = useCallback(() => {
     if (abortControllerRef.current) {
@@ -425,6 +434,8 @@ function App() {
             currentYear={currentYear}
             solarLunar={solarLunar}
             onSolarLunarChange={handleSolarLunarChange}
+            isLeapMonth={isLeapMonth}
+            onLeapMonthChange={handleLeapMonthChange}
             timeUnknown={timeUnknown}
             onTimeUnknownChange={handleTimeUnknownChange}
           />

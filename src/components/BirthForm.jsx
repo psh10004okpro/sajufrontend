@@ -11,6 +11,8 @@ const BirthForm = React.memo(({
   currentYear,
   solarLunar,
   onSolarLunarChange,
+  isLeapMonth,
+  onLeapMonthChange,
   timeUnknown,
   onTimeUnknownChange
 }) => {
@@ -35,6 +37,24 @@ const BirthForm = React.memo(({
           음력
         </button>
       </div>
+
+      {/* 윤달 옵션 (음력일 때만 표시) */}
+      {solarLunar === 'lunar' && (
+        <div className="leap-month-option">
+          <label className="checkbox-label">
+            <input
+              type="checkbox"
+              checked={isLeapMonth}
+              onChange={onLeapMonthChange}
+              className="checkbox-input"
+            />
+            <span className="checkbox-text">
+              🌙 윤달입니다
+              <small>음력에서 윤달이 있는 달에 태어났을 경우 체크하세요</small>
+            </span>
+          </label>
+        </div>
+      )}
 
       <div className="form-row">
         <div className="form-group">
