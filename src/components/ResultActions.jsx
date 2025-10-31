@@ -4,7 +4,8 @@ const ResultActions = React.memo(({
   isBookmarked,
   onToggleBookmark,
   onShare,
-  copySuccess
+  copySuccess,
+  onPDFPreview
 }) => {
   return (
     <div className="result-actions">
@@ -21,6 +22,13 @@ const ResultActions = React.memo(({
         title="결과 복사"
       >
         📋 {copySuccess ? '복사됨!' : '결과 복사'}
+      </button>
+      <button
+        className="pdf-button"
+        onClick={onPDFPreview}
+        title="PDF 다운로드"
+      >
+        📄 PDF 저장
       </button>
     </div>
   );

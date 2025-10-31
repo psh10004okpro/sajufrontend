@@ -791,7 +791,8 @@
 }
 
 .bookmark-button,
-.share-button {
+.share-button,
+.pdf-button {
   padding: 0.75rem 1.5rem;
   border: none;
   border-radius: 8px;
@@ -828,6 +829,16 @@
   box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
 }
 
+.pdf-button {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  color: white;
+}
+
+.pdf-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(245, 87, 108, 0.4);
+}
+
 /* 반응형 (사이드바) */
 @media (max-width: 768px) {
   .sidebar {
@@ -848,7 +859,8 @@
   }
 
   .bookmark-button,
-  .share-button {
+  .share-button,
+  .pdf-button {
     width: 100%;
   }
 }

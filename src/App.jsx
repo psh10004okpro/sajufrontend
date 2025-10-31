@@ -12,6 +12,7 @@ import {
   convertToText,
   copyToClipboard
 } from './utils/storage'
+import { generatePDFFromHTML } from './utils/pdfGenerator'
 
 // 작은 컴포넌트는 직접 import
 import LoadingSpinner from './components/LoadingSpinner'
@@ -24,6 +25,7 @@ const BirthForm = lazy(() => import('./components/BirthForm'))
 const Sidebar = lazy(() => import('./components/Sidebar'))
 const SajuResult = lazy(() => import('./components/SajuResult'))
 const InterpretationResult = lazy(() => import('./components/InterpretationResult'))
+const PDFLayout = lazy(() => import('./components/PDFLayout'))
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
@@ -53,6 +55,10 @@ function App() {
   const [sidebarTab, setSidebarTab] = useState('history');
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
+
+  // PDF 상태
+  const [showPDFPreview, setShowPDFPreview] = useState(false);
+  const [pdfGenerating, setPdfGenerating] = useState(false);
 
   // 초기 로드
   useEffect(() => {
@@ -252,6 +258,34 @@ function App() {
     }
   }, [result]);
 
+  const handlePDFPreview = useCallback(() => {
+    setShowPDFPreview(true);
+  }, []);
+
+  const handleClosePDFPreview = useCallback(() => {
+    setShowPDFPreview(false);
+  }, []);
+
+  const handleDownloadPDF = useCallback(async () => {
+    if (!result) return;
+
+    setPdfGenerating(true);
+    try {
+      const element = document.getElementById('pdf-content');
+      if (element) {
+        const birthInfo = result.saju_result.birth_info;
+        const filename = `사주풀이_${birthInfo.year}년${birthInfo.month}월${birthInfo.day}일_${birthInfo.hour}시.pdf`;
+        await generatePDFFromHTML(element, filename);
+        setShowPDFPreview(false);
+      }
+    } catch (error) {
+      console.error('PDF 생성 오류:', error);
+      alert('PDF 생성 중 오류가 발생했습니다.');
+    } finally {
+      setPdfGenerating(false);
+    }
+  }, [result]);
+
   const handleHistoryItemClick = useCallback((item) => {
     setResult({
       saju_result: item.sajuResult,
@@ -376,6 +410,7 @@ function App() {
               onToggleBookmark={handleToggleBookmark}
               onShare={handleShare}
               copySuccess={copySuccess}
+              onPDFPreview={handlePDFPreview}
             />
 
             <div className="result-container">
@@ -398,6 +433,40 @@ function App() {
       <footer className="app-footer">
         <p>Made with Claude AI 🤖</p>
       </footer>
+
+      {/* PDF 미리보기 모달 */}
+      {showPDFPreview && result && (
+        <div className="pdf-preview-container">
+          <div className="pdf-preview-content">
+            <div className="pdf-preview-header">
+              <h3 className="pdf-preview-title">PDF 미리보기</h3>
+              <button className="pdf-preview-close" onClick={handleClosePDFPreview}>
+                ×
+              </button>
+            </div>
+            <div className="pdf-preview-body">
+              <Suspense fallback={<LoadingSpinner message="PDF 레이아웃 로딩 중..." />}>
+                <PDFLayout result={result} />
+              </Suspense>
+            </div>
+            <div className="pdf-preview-actions">
+              <button
+                className="pdf-preview-button pdf-download-button"
+                onClick={handleDownloadPDF}
+                disabled={pdfGenerating}
+              >
+                {pdfGenerating ? '생성 중...' : '📥 PDF 다운로드'}
+              </button>
+              <button
+                className="pdf-preview-button pdf-cancel-button"
+                onClick={handleClosePDFPreview}
+              >
+                취소
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
