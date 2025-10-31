@@ -26,6 +26,9 @@ const Sidebar = lazy(() => import('./components/Sidebar'))
 const SajuResult = lazy(() => import('./components/SajuResult'))
 const InterpretationResult = lazy(() => import('./components/InterpretationResult'))
 const PDFLayout = lazy(() => import('./components/PDFLayout'))
+const DaeunTimeline = lazy(() => import('./components/DaeunTimeline'))
+const SaeunCard = lazy(() => import('./components/SaeunCard'))
+const LifeStageAnalysis = lazy(() => import('./components/LifeStageAnalysis'))
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
@@ -447,6 +450,37 @@ function App() {
               <Suspense fallback={<LoadingSpinner message="결과 로딩 중..." />}>
                 <SajuResult sajuResult={result.saju_result} showHanja={showHanja} />
               </Suspense>
+
+              {/* 대운 타임라인 */}
+              {result.saju_result.daeun_periods && result.saju_result.daeun_periods.length > 0 && (
+                <Suspense fallback={<LoadingSpinner message="대운 로딩 중..." />}>
+                  <DaeunTimeline
+                    daeunPeriods={result.saju_result.daeun_periods}
+                    birthYear={result.saju_result.birth_info.year}
+                    showHanja={showHanja}
+                  />
+                </Suspense>
+              )}
+
+              {/* 세운 카드 */}
+              {result.saju_result.saeun_years && result.saju_result.saeun_years.length > 0 && (
+                <Suspense fallback={<LoadingSpinner message="세운 로딩 중..." />}>
+                  <SaeunCard
+                    saeunYears={result.saju_result.saeun_years}
+                    showHanja={showHanja}
+                  />
+                </Suspense>
+              )}
+
+              {/* 인생 단계별 분석 */}
+              {result.saju_result.daeun_periods && result.saju_result.daeun_periods.length > 0 && (
+                <Suspense fallback={<LoadingSpinner message="인생 단계 분석 로딩 중..." />}>
+                  <LifeStageAnalysis
+                    daeunPeriods={result.saju_result.daeun_periods}
+                    birthYear={result.saju_result.birth_info.year}
+                  />
+                </Suspense>
+              )}
 
               <Suspense fallback={<LoadingSpinner message="해석 로딩 중..." />}>
                 <InterpretationResult

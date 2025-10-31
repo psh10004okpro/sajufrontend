@@ -1038,3 +1038,342 @@
     padding: 10px 12px;
   }
 }
+
+/* 대운 타임라인 */
+.daeun-timeline {
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 2rem;
+}
+
+.daeun-timeline h3 {
+  margin-top: 0;
+  color: #333;
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.daeun-description {
+  color: #666;
+  margin-bottom: 1.5rem;
+  font-size: 0.95rem;
+}
+
+.daeun-periods {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.daeun-period {
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 1rem;
+  text-align: center;
+  transition: all 0.3s;
+  border: 2px solid transparent;
+}
+
+.daeun-period.past {
+  opacity: 0.6;
+  background: #e9ecef;
+}
+
+.daeun-period.current {
+  background: linear-gradient(135deg, #fff3cd 0%, #ffe69c 100%);
+  border: 2px solid #ffc107;
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3);
+}
+
+.daeun-period.future {
+  background: #f0f0ff;
+  border: 2px solid #e0e0ff;
+}
+
+.daeun-period-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.daeun-characters {
+  font-size: 1.8rem;
+  font-weight: bold;
+  letter-spacing: 2px;
+}
+
+.daeun-age-range {
+  font-size: 0.9rem;
+  color: #666;
+  font-weight: 600;
+}
+
+.daeun-current-badge {
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+  color: #856404;
+  font-weight: 600;
+}
+
+.daeun-legend {
+  display: flex;
+  gap: 1.5rem;
+  justify-content: center;
+  padding-top: 1rem;
+  border-top: 1px solid #dee2e6;
+  flex-wrap: wrap;
+}
+
+.legend-item {
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.past-legend {
+  color: #6c757d;
+}
+
+.current-legend {
+  color: #856404;
+}
+
+.future-legend {
+  color: #667eea;
+}
+
+/* 세운 카드 */
+.saeun-card {
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 2rem;
+}
+
+.saeun-card h3 {
+  margin-top: 0;
+  color: #333;
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.saeun-description {
+  color: #666;
+  margin-bottom: 1.5rem;
+  font-size: 0.95rem;
+}
+
+.saeun-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.saeun-item {
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 1rem;
+  text-align: center;
+  transition: all 0.3s;
+  border: 2px solid transparent;
+}
+
+.saeun-item.past-year {
+  opacity: 0.7;
+  background: #e9ecef;
+}
+
+.saeun-item.current-year {
+  background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+  border: 2px solid #28a745;
+  transform: scale(1.08);
+  box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+}
+
+.saeun-item.future-year {
+  background: #f0f0ff;
+}
+
+.saeun-year {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.current-badge {
+  background: #28a745;
+  color: white;
+  padding: 0.1rem 0.5rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+}
+
+.saeun-pillar {
+  font-size: 1.6rem;
+  font-weight: bold;
+  margin: 0.5rem 0;
+  letter-spacing: 1px;
+}
+
+.saeun-age {
+  font-size: 0.85rem;
+  color: #666;
+}
+
+.saeun-note {
+  margin-top: 1rem;
+  padding: 0.75rem;
+  background: #e7f3ff;
+  border-left: 4px solid #2196f3;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  color: #0d47a1;
+}
+
+/* 인생 단계별 분석 */
+.life-stage-analysis {
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 2rem;
+}
+
+.life-stage-analysis h3 {
+  margin-top: 0;
+  color: #333;
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.life-stage-description {
+  color: #666;
+  margin-bottom: 1.5rem;
+  font-size: 0.95rem;
+}
+
+.life-stages {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+.life-stage {
+  background: #f8f9fa;
+  border-radius: 12px;
+  padding: 1.5rem;
+  border: 2px solid #e9ecef;
+  transition: all 0.3s;
+}
+
+.life-stage.current-stage {
+  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+  border: 2px solid #2196f3;
+  box-shadow: 0 4px 12px rgba(33, 150, 243, 0.2);
+}
+
+.stage-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid #dee2e6;
+}
+
+.stage-header h4 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: #333;
+}
+
+.stage-badge {
+  background: #2196f3;
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.stage-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.stage-desc {
+  font-size: 0.9rem;
+  color: #555;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.stage-daeun {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.stage-daeun-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: white;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
+
+.daeun-char {
+  font-weight: 600;
+  color: #667eea;
+}
+
+.daeun-range {
+  color: #888;
+  font-size: 0.85rem;
+}
+
+/* 반응형 - 대운/세운/인생 단계 */
+@media (max-width: 768px) {
+  .daeun-periods {
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 0.75rem;
+  }
+
+  .daeun-characters {
+    font-size: 1.4rem;
+  }
+
+  .saeun-grid {
+    grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+    gap: 0.75rem;
+  }
+
+  .saeun-pillar {
+    font-size: 1.3rem;
+  }
+
+  .life-stages {
+    grid-template-columns: 1fr;
+  }
+
+  .daeun-legend {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+}
