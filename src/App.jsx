@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import './App.css'
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
@@ -17,6 +17,10 @@ function App() {
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [useStreaming, setUseStreaming] = useState(true);
+  const [isStreaming, setIsStreaming] = useState(false);
+  const [streamingText, setStreamingText] = useState('');
+  const abortControllerRef = useRef(null);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -26,22 +30,95 @@ function App() {
     }));
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
-    setResult(null);
-
+  const handleStreamingAnalysis = async (birthInfo) => {
     try {
-      const birthInfo = {
-        year: parseInt(formData.year),
-        month: parseInt(formData.month),
-        day: parseInt(formData.day),
-        hour: parseInt(formData.hour),
-        minute: parseInt(formData.minute) || 0,
-        gender: formData.gender
-      };
+      // 1단계: 사주 계산
+      const calculateResponse = await fetch(`${API_BASE_URL}/api/v1/calculate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(birthInfo)
+      });
 
+      if (!calculateResponse.ok) {
+        const errorData = await calculateResponse.json();
+        throw new Error(errorData.detail || '사주 계산 중 오류가 발생했습니다.');
+      }
+
+      const sajuResult = await calculateResponse.json();
+
+      // 결과에 사주 정보 먼저 설정
+      setResult({
+        saju_result: sajuResult,
+        interpretation: {
+          interpretation: '',
+          topics_covered: []
+        }
+      });
+
+      // 2단계: 스트리밍 해석
+      setIsStreaming(true);
+      setStreamingText('');
+
+      abortControllerRef.current = new AbortController();
+
+      const streamResponse = await fetch(`${API_BASE_URL}/api/v1/interpret/stream`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          saju_result: sajuResult,
+          question: formData.question || '전체적인 운세를 알려주세요',
+          detail_level: 'normal',
+          tone: 'friendly'
+        }),
+        signal: abortControllerRef.current.signal
+      });
+
+      if (!streamResponse.ok) {
+        throw new Error('스트리밍 해석 중 오류가 발생했습니다.');
+      }
+
+      const reader = streamResponse.body.getReader();
+      const decoder = new TextDecoder();
+      let accumulatedText = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+
+        if (done) break;
+
+        const chunk = decoder.decode(value, { stream: true });
+        accumulatedText += chunk;
+        setStreamingText(accumulatedText);
+      }
+
+      // 스트리밍 완료 후 최종 결과 설정
+      setResult(prev => ({
+        ...prev,
+        interpretation: {
+          interpretation: accumulatedText,
+          topics_covered: []
+        }
+      }));
+
+    } catch (err) {
+      if (err.name === 'AbortError') {
+        setError('스트리밍이 취소되었습니다.');
+      } else {
+        setError(err.message);
+        console.error('Error:', err);
+      }
+    } finally {
+      setIsStreaming(false);
+      setLoading(false);
+    }
+  };
+
+  const handleNormalAnalysis = async (birthInfo) => {
+    try {
       const response = await fetch(`${API_BASE_URL}/api/v1/full-analysis`, {
         method: 'POST',
         headers: {
@@ -67,6 +144,35 @@ function App() {
       console.error('Error:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+    setResult(null);
+    setStreamingText('');
+
+    const birthInfo = {
+      year: parseInt(formData.year),
+      month: parseInt(formData.month),
+      day: parseInt(formData.day),
+      hour: parseInt(formData.hour),
+      minute: parseInt(formData.minute) || 0,
+      gender: formData.gender
+    };
+
+    if (useStreaming) {
+      await handleStreamingAnalysis(birthInfo);
+    } else {
+      await handleNormalAnalysis(birthInfo);
+    }
+  };
+
+  const handleCancelStreaming = () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
     }
   };
 
@@ -187,15 +293,45 @@ function App() {
             <small>특정 주제를 물어보거나 비워두면 전체 운세를 분석합니다.</small>
           </div>
 
+          <div className="streaming-toggle">
+            <label className="toggle-label">
+              <input
+                type="checkbox"
+                checked={useStreaming}
+                onChange={(e) => setUseStreaming(e.target.checked)}
+                className="toggle-checkbox"
+              />
+              <span className="toggle-switch"></span>
+              <span className="toggle-text">
+                🔄 실시간 스트리밍 모드
+                <small>AI 해석을 실시간으로 확인합니다</small>
+              </span>
+            </label>
+          </div>
+
           <button type="submit" className="submit-button" disabled={loading}>
-            {loading ? '분석 중...' : '사주 풀이 시작'}
+            {loading ? (isStreaming ? '해석 생성 중...' : '분석 중...') : '사주 풀이 시작'}
           </button>
         </form>
 
-        {loading && (
+        {loading && !isStreaming && (
           <div className="loading">
             <div className="spinner"></div>
             <p>사주팔자를 계산하고 해석하는 중입니다...</p>
+          </div>
+        )}
+
+        {isStreaming && (
+          <div className="streaming-container">
+            <div className="streaming-header">
+              <span className="streaming-indicator">
+                <span className="pulse"></span>
+                실시간 해석 생성 중...
+              </span>
+              <button onClick={handleCancelStreaming} className="cancel-button">
+                중단
+              </button>
+            </div>
           </div>
         )}
 
@@ -290,20 +426,28 @@ function App() {
 
             <div className="interpretation-result">
               <h2>🤖 AI 해석</h2>
-              <div className="interpretation-content">
-                {result.interpretation.interpretation.split('\n').map((paragraph, index) => (
-                  paragraph.trim() && <p key={index}>{paragraph}</p>
-                ))}
-              </div>
-              {result.interpretation.topics_covered && result.interpretation.topics_covered.length > 0 && (
-                <div className="topics-covered">
-                  <h4>다룬 주제</h4>
-                  <div className="topics-list">
-                    {result.interpretation.topics_covered.map((topic, index) => (
-                      <span key={index} className="topic-tag">{topic}</span>
+              {isStreaming ? (
+                <div className="interpretation-content streaming">
+                  <p className="streaming-text">{streamingText}<span className="cursor">|</span></p>
+                </div>
+              ) : (
+                <>
+                  <div className="interpretation-content">
+                    {result.interpretation.interpretation.split('\n').map((paragraph, index) => (
+                      paragraph.trim() && <p key={index}>{paragraph}</p>
                     ))}
                   </div>
-                </div>
+                  {result.interpretation.topics_covered && result.interpretation.topics_covered.length > 0 && (
+                    <div className="topics-covered">
+                      <h4>다룬 주제</h4>
+                      <div className="topics-list">
+                        {result.interpretation.topics_covered.map((topic, index) => (
+                          <span key={index} className="topic-tag">{topic}</span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </>
               )}
             </div>
           </div>
