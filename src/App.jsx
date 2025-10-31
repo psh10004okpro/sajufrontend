@@ -33,10 +33,14 @@ const CategoryTabs = lazy(() => import('./components/CategoryTabs'))
 const OhangChart = lazy(() => import('./components/OhangChart'))
 const TwelveUnseong = lazy(() => import('./components/TwelveUnseong'))
 const Sinsal = lazy(() => import('./components/Sinsal'))
+const CompatibilityForm = lazy(() => import('./components/CompatibilityForm'))
+const CompatibilityResult = lazy(() => import('./components/CompatibilityResult'))
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
 function App() {
+  // 모드 선택 (saju 또는 compatibility)
+  const [mode, setMode] = useState('saju');
   const [formData, setFormData] = useState({
     year: '',
     month: '',
@@ -52,6 +56,11 @@ function App() {
   const [isLeapMonth, setIsLeapMonth] = useState(false); // 윤달 여부
   const [timeUnknown, setTimeUnknown] = useState(false);
   const [showHanja, setShowHanja] = useState(false); // 한자 표시 옵션
+
+  // 궁합 관련 상태
+  const [compatibilityResult, setCompatibilityResult] = useState(null);
+  const [compatibilityLoading, setCompatibilityLoading] = useState(false);
+  const [compatibilityError, setCompatibilityError] = useState(null);
 
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -368,6 +377,36 @@ function App() {
     }
   }, [formData.question]);
 
+  const handleCompatibilitySubmit = useCallback(async (data) => {
+    setCompatibilityLoading(true);
+    setCompatibilityError(null);
+    setCompatibilityResult(null);
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/v1/compatibility`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          person1: data.person1,
+          person2: data.person2,
+          question: '두 사람의 궁합을 상세히 분석해주세요'
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || '궁합 분석 중 오류가 발생했습니다.');
+      }
+
+      const result = await response.json();
+      setCompatibilityResult(result);
+    } catch (err) {
+      setCompatibilityError(err.message);
+    } finally {
+      setCompatibilityLoading(false);
+    }
+  }, []);
+
   const handleSubmit = useCallback(async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -562,6 +601,21 @@ function App() {
           <div className="header-title">
             <h1>🔮 사주 풀이</h1>
             <p>Claude AI 기반 사주팔자 계산 및 해석</p>
+            {/* 모드 선택 탭 */}
+            <div className="mode-tabs">
+              <button
+                className={`mode-tab ${mode === 'saju' ? 'active' : ''}`}
+                onClick={() => setMode('saju')}
+              >
+                📜 사주 보기
+              </button>
+              <button
+                className={`mode-tab ${mode === 'compatibility' ? 'active' : ''}`}
+                onClick={() => setMode('compatibility')}
+              >
+                💕 궁합 보기
+              </button>
+            </div>
           </div>
           <button className="hanja-toggle-button" onClick={() => setShowHanja(!showHanja)}>
             {showHanja ? '🔤 한글' : '㊥ 漢字'}
@@ -570,8 +624,10 @@ function App() {
       </header>
 
       <main className="app-main">
-        <Suspense fallback={<LoadingSpinner message="폼 로딩 중..." />}>
-          <BirthForm
+        {/* 사주 모드 */}
+        {mode === 'saju' && (
+          <Suspense fallback={<LoadingSpinner message="폼 로딩 중..." />}>
+            <BirthForm
             formData={formData}
             onInputChange={handleInputChange}
             onSubmit={handleSubmit}
@@ -588,14 +644,40 @@ function App() {
             onTimeUnknownChange={handleTimeUnknownChange}
           />
         </Suspense>
+        )}
 
-        {loading && !isStreaming && <LoadingSpinner />}
+        {/* 궁합 모드 */}
+        {mode === 'compatibility' && (
+          <>
+            <Suspense fallback={<LoadingSpinner message="궁합 폼 로딩 중..." />}>
+              <CompatibilityForm
+                onSubmit={handleCompatibilitySubmit}
+                loading={compatibilityLoading}
+              />
+            </Suspense>
 
-        {isStreaming && <StreamingIndicator onCancel={handleCancelStreaming} />}
+            {compatibilityLoading && <LoadingSpinner message="궁합 분석 중..." />}
 
-        {error && <ErrorMessage error={error} />}
+            {compatibilityError && <ErrorMessage error={compatibilityError} />}
 
-        {result && (
+            {compatibilityResult && (
+              <Suspense fallback={<LoadingSpinner message="궁합 결과 로딩 중..." />}>
+                <CompatibilityResult
+                  compatibilityData={compatibilityResult.compatibility_analysis}
+                  interpretation={compatibilityResult.interpretation?.interpretation}
+                />
+              </Suspense>
+            )}
+          </>
+        )}
+
+        {mode === 'saju' && loading && !isStreaming && <LoadingSpinner />}
+
+        {mode === 'saju' && isStreaming && <StreamingIndicator onCancel={handleCancelStreaming} />}
+
+        {mode === 'saju' && error && <ErrorMessage error={error} />}
+
+        {mode === 'saju' && result && (
           <>
             <ResultActions
               isBookmarked={isBookmarked}
