@@ -30,6 +30,7 @@ const DaeunTimeline = lazy(() => import('./components/DaeunTimeline'))
 const SaeunCard = lazy(() => import('./components/SaeunCard'))
 const LifeStageAnalysis = lazy(() => import('./components/LifeStageAnalysis'))
 const CategoryTabs = lazy(() => import('./components/CategoryTabs'))
+const OhangChart = lazy(() => import('./components/OhangChart'))
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
@@ -606,6 +607,16 @@ function App() {
               <Suspense fallback={<LoadingSpinner message="결과 로딩 중..." />}>
                 <SajuResult sajuResult={result.saju_result} showHanja={showHanja} />
               </Suspense>
+
+              {/* 오행 밸런스 차트 */}
+              {result.saju_result.five_elements && (
+                <Suspense fallback={<LoadingSpinner message="오행 차트 로딩 중..." />}>
+                  <OhangChart
+                    fiveElements={result.saju_result.five_elements}
+                    showHanja={showHanja}
+                  />
+                </Suspense>
+              )}
 
               {/* 대운 타임라인 */}
               {result.saju_result.daeun_periods && result.saju_result.daeun_periods.length > 0 && (
