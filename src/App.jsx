@@ -223,7 +223,9 @@ function App() {
       day: parseInt(formData.day),
       hour: parseInt(formData.hour),
       minute: parseInt(formData.minute) || 0,
-      gender: formData.gender
+      gender: formData.gender,
+      is_lunar: solarLunar === 'lunar',
+      is_leap_month: false // 향후 추가 가능
     };
 
     if (useStreaming) {
@@ -231,7 +233,7 @@ function App() {
     } else {
       await handleNormalAnalysis(birthInfo);
     }
-  }, [formData, useStreaming, handleStreamingAnalysis, handleNormalAnalysis]);
+  }, [formData, useStreaming, solarLunar, handleStreamingAnalysis, handleNormalAnalysis]);
 
   const handleCancelStreaming = useCallback(() => {
     if (abortControllerRef.current) {
