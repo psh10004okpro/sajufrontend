@@ -1,4 +1,213 @@
 /* ========================================
+   전문가용 디자인 시스템 (Professional Design System)
+   ======================================== */
+
+:root {
+  /* 브랜드 색상 */
+  --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --primary-dark: #4c51bf;
+  --primary-light: #9f7aea;
+
+  /* 전문가용 색상 팔레트 */
+  --gold: #f6ad55;
+  --gold-light: #fbd38d;
+  --gold-dark: #dd6b20;
+
+  --silver: #cbd5e0;
+  --bronze: #d69e2e;
+
+  /* 명리학 오행 색상 (고급) */
+  --wood-pro: #10b981;
+  --fire-pro: #ef4444;
+  --earth-pro: #f59e0b;
+  --metal-pro: #6366f1;
+  --water-pro: #3b82f6;
+
+  /* 중성 색상 */
+  --gray-50: #f9fafb;
+  --gray-100: #f3f4f6;
+  --gray-200: #e5e7eb;
+  --gray-300: #d1d5db;
+  --gray-600: #4b5563;
+  --gray-700: #374151;
+  --gray-800: #1f2937;
+  --gray-900: #111827;
+
+  /* 타이포그래피 스케일 */
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-base: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.25rem;
+  --font-size-2xl: 1.5rem;
+  --font-size-3xl: 1.875rem;
+  --font-size-4xl: 2.25rem;
+  --font-size-5xl: 3rem;
+
+  /* 그림자 (프리미엄) */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+
+  /* 간격 */
+  --spacing-xs: 0.5rem;
+  --spacing-sm: 0.75rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+  --spacing-2xl: 3rem;
+  --spacing-3xl: 4rem;
+
+  /* 테두리 반경 */
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-2xl: 1.5rem;
+  --radius-full: 9999px;
+}
+
+/* 전문가용 타이포그래피 */
+.result-title {
+  font-size: var(--font-size-3xl);
+  font-weight: 700;
+  color: var(--gray-900);
+  margin-bottom: var(--spacing-md);
+  letter-spacing: -0.025em;
+  line-height: 1.2;
+}
+
+.result-subtitle {
+  font-size: var(--font-size-xl);
+  font-weight: 600;
+  color: var(--gray-800);
+  margin-bottom: var(--spacing-sm);
+  letter-spacing: -0.01em;
+}
+
+.result-section-title {
+  font-size: var(--font-size-2xl);
+  font-weight: 700;
+  color: var(--gray-900);
+  margin-bottom: var(--spacing-lg);
+  padding-bottom: var(--spacing-md);
+  border-bottom: 3px solid var(--gray-200);
+  letter-spacing: -0.02em;
+}
+
+.result-card-title {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  color: var(--gray-800);
+  margin-bottom: var(--spacing-sm);
+}
+
+.result-description {
+  font-size: var(--font-size-base);
+  color: var(--gray-600);
+  line-height: 1.6;
+}
+
+/* 전문가용 카드 스타일 */
+.professional-card {
+  background: white;
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
+  padding: var(--spacing-xl);
+  margin-bottom: var(--spacing-xl);
+  border: 1px solid var(--gray-100);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.professional-card:hover {
+  box-shadow: var(--shadow-xl);
+  transform: translateY(-2px);
+}
+
+.professional-card-premium {
+  background: linear-gradient(135deg, #ffffff 0%, #faf5ff 100%);
+  border: 2px solid var(--primary-light);
+  position: relative;
+  overflow: hidden;
+}
+
+.professional-card-premium::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: var(--primary-gradient);
+}
+
+/* 골드 장식 요소 */
+.gold-accent {
+  background: linear-gradient(135deg, var(--gold) 0%, var(--gold-light) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.gold-border {
+  border: 2px solid var(--gold);
+  box-shadow: 0 0 20px rgba(246, 173, 85, 0.3);
+}
+
+/* 프리미엄 그라디언트 배경 */
+.premium-gradient-bg {
+  background: linear-gradient(135deg,
+    rgba(102, 126, 234, 0.05) 0%,
+    rgba(118, 75, 162, 0.05) 100%);
+}
+
+/* 결과 컨테이너 개선 */
+.result-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--spacing-2xl) var(--spacing-lg);
+}
+
+/* 헤더 장식 라인 */
+.decorative-line {
+  height: 3px;
+  background: var(--primary-gradient);
+  border-radius: var(--radius-full);
+  margin: var(--spacing-lg) 0;
+}
+
+/* 데이터 표시용 뱃지 (프리미엄) */
+.premium-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  background: var(--primary-gradient);
+  color: white;
+  box-shadow: var(--shadow-md);
+  letter-spacing: 0.025em;
+}
+
+/* 전문가용 정보 박스 */
+.info-box-professional {
+  background: var(--gray-50);
+  border-left: 4px solid var(--primary-dark);
+  padding: var(--spacing-lg);
+  border-radius: var(--radius-md);
+  margin: var(--spacing-lg) 0;
+}
+
+.info-box-professional strong {
+  color: var(--primary-dark);
+  font-weight: 700;
+}
+
+/* ========================================
    접근성 (Accessibility)
    ======================================== */
 
@@ -358,53 +567,103 @@ textarea:focus {
 /* 사주 결과 */
 .saju-result {
   background: white;
-  border-radius: 12px;
-  padding: 2rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-radius: var(--radius-xl);
+  padding: var(--spacing-2xl);
+  box-shadow: var(--shadow-xl);
+  border: 1px solid var(--gray-100);
+  margin-bottom: var(--spacing-xl);
+  position: relative;
+}
+
+.saju-result::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: var(--primary-gradient);
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
 }
 
 .saju-result h2 {
-  margin-top: 0;
-  color: #333;
-  border-bottom: 3px solid #667eea;
-  padding-bottom: 0.5rem;
+  font-size: var(--font-size-3xl);
+  font-weight: 700;
+  color: var(--gray-900);
+  margin: 0 0 var(--spacing-xl) 0;
+  padding-bottom: var(--spacing-md);
+  border-bottom: 3px solid var(--gray-200);
+  letter-spacing: -0.02em;
 }
 
-/* 사주 기둥 */
+/* 사주 기둥 - 전문가 스타일 */
 .pillars {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 1rem;
-  margin: 2rem 0;
+  gap: var(--spacing-lg);
+  margin: var(--spacing-2xl) 0;
 }
 
 .pillar {
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-  border-radius: 8px;
-  padding: 1.5rem;
+  background: linear-gradient(135deg, #fafafa 0%, #f0f0f0 100%);
+  border: 2px solid var(--gray-200);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-xl);
   text-align: center;
+  box-shadow: var(--shadow-md);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.pillar::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--primary-gradient);
+}
+
+.pillar:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--primary-light);
 }
 
 .pillar h3 {
-  margin: 0 0 1rem 0;
-  color: #555;
-  font-size: 0.9rem;
+  margin: 0 0 var(--spacing-lg) 0;
+  color: var(--gray-700);
+  font-size: var(--font-size-base);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .pillar-chars {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: var(--spacing-md);
 }
 
 .heavenly-stem,
 .earthly-branch {
-  font-size: 2rem;
-  font-weight: bold;
-  padding: 0.5rem;
-  border-radius: 6px;
+  font-size: var(--font-size-4xl);
+  font-weight: 700;
+  padding: var(--spacing-md);
+  border-radius: var(--radius-md);
   background: white;
+  border: 2px solid var(--gray-100);
   transition: all 0.3s;
+  box-shadow: var(--shadow-sm);
+}
+
+.heavenly-stem:hover,
+.earthly-branch:hover {
+  background: linear-gradient(135deg, #ffffff 0%, #faf5ff 100%);
+  border-color: var(--primary-light);
+  transform: scale(1.05);
 }
 
 /* 한자 텍스트 */
@@ -1792,82 +2051,137 @@ textarea:focus {
 }
 
 /* ========================================
-   오행 밸런스 차트
+   오행 밸런스 차트 - 전문가 스타일
    ======================================== */
 
 .ohang-chart {
-  margin: 2rem 0;
-  padding: 2rem;
+  margin: var(--spacing-xl) 0;
+  padding: var(--spacing-2xl);
   background: white;
-  border-radius: 16px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-xl);
+  border: 1px solid var(--gray-100);
+  position: relative;
+}
+
+.ohang-chart::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg,
+    var(--wood-pro) 0%,
+    var(--fire-pro) 25%,
+    var(--earth-pro) 50%,
+    var(--metal-pro) 75%,
+    var(--water-pro) 100%);
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
 }
 
 .ohang-chart-header {
-  margin-bottom: 2rem;
+  margin-bottom: var(--spacing-2xl);
   text-align: center;
 }
 
 .ohang-chart-header h3 {
-  margin: 0 0 0.5rem 0;
-  font-size: 1.75rem;
-  color: #2c3e50;
+  margin: 0 0 var(--spacing-sm) 0;
+  font-size: var(--font-size-3xl);
+  font-weight: 700;
+  color: var(--gray-900);
+  letter-spacing: -0.02em;
 }
 
 .ohang-chart-description {
   margin: 0;
-  color: #7f8c8d;
-  font-size: 1rem;
+  color: var(--gray-600);
+  font-size: var(--font-size-lg);
+  font-weight: 500;
 }
 
-/* 바 차트 */
+/* 바 차트 - 전문가 스타일 */
 .ohang-bars {
-  margin: 2rem 0;
+  margin: var(--spacing-2xl) 0;
 }
 
 .ohang-bar-container {
-  margin-bottom: 1.5rem;
+  margin-bottom: var(--spacing-xl);
+  padding: var(--spacing-md);
+  background: var(--gray-50);
+  border-radius: var(--radius-lg);
+  transition: all 0.3s ease;
+}
+
+.ohang-bar-container:hover {
+  background: white;
+  box-shadow: var(--shadow-md);
+  transform: translateX(4px);
 }
 
 .ohang-bar-label {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 0.5rem;
+  margin-bottom: var(--spacing-md);
 }
 
 .ohang-name {
-  font-weight: 600;
-  font-size: 1.1rem;
-  color: #2c3e50;
+  font-weight: 700;
+  font-size: var(--font-size-xl);
+  color: var(--gray-900);
+  letter-spacing: -0.01em;
 }
 
 .ohang-count {
-  font-size: 0.95rem;
-  color: #7f8c8d;
-  background: #f8f9fa;
-  padding: 0.25rem 0.75rem;
-  border-radius: 12px;
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  color: white;
+  background: var(--primary-gradient);
+  padding: 0.375rem 1rem;
+  border-radius: var(--radius-full);
+  box-shadow: var(--shadow-sm);
 }
 
 .ohang-bar-wrapper {
   width: 100%;
-  height: 40px;
-  background: #f1f3f5;
-  border-radius: 20px;
+  height: 48px;
+  background: var(--gray-200);
+  border-radius: var(--radius-full);
   overflow: hidden;
   position: relative;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.06);
 }
 
 .ohang-bar {
   height: 100%;
-  border-radius: 20px;
+  border-radius: var(--radius-full);
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  padding-right: 1rem;
-  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding-right: var(--spacing-lg);
+  transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.ohang-bar::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.2) 50%,
+    transparent 100%);
+  animation: shimmer-bar 2s infinite;
+}
+
+@keyframes shimmer-bar {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
 }
 
 .ohang-percentage {
