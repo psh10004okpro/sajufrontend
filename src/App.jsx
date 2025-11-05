@@ -34,6 +34,7 @@ const OhangChart = lazy(() => import('./components/OhangChart'))
 const TwelveUnseong = lazy(() => import('./components/TwelveUnseong'))
 const Sinsal = lazy(() => import('./components/Sinsal'))
 const YongsinAnalysis = lazy(() => import('./components/YongsinAnalysis'))
+const HapchunghyeonghaeparAnalysis = lazy(() => import('./components/HapchunghyeonghaeparAnalysis'))
 const CompatibilityForm = lazy(() => import('./components/CompatibilityForm'))
 const CompatibilityResult = lazy(() => import('./components/CompatibilityResult'))
 
@@ -751,6 +752,13 @@ function App() {
               {result.saju_result.yongsin && (
                 <Suspense fallback={<LoadingSpinner message="용신 분석 로딩 중..." />}>
                   <YongsinAnalysis yongsin={result.saju_result.yongsin} />
+                </Suspense>
+              )}
+
+              {/* 합충형해파 분석 */}
+              {result.saju_result.hapchunghyeonghaepa && (
+                <Suspense fallback={<LoadingSpinner message="합충형해파 분석 로딩 중..." />}>
+                  <HapchunghyeonghaeparAnalysis hapchunghyeonghaepa={result.saju_result.hapchunghyeonghaepa} />
                 </Suspense>
               )}
 
