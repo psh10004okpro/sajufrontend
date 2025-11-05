@@ -33,6 +33,7 @@ const CategoryTabs = lazy(() => import('./components/CategoryTabs'))
 const OhangChart = lazy(() => import('./components/OhangChart'))
 const TwelveUnseong = lazy(() => import('./components/TwelveUnseong'))
 const Sinsal = lazy(() => import('./components/Sinsal'))
+const YongsinAnalysis = lazy(() => import('./components/YongsinAnalysis'))
 const CompatibilityForm = lazy(() => import('./components/CompatibilityForm'))
 const CompatibilityResult = lazy(() => import('./components/CompatibilityResult'))
 
@@ -743,6 +744,13 @@ function App() {
               {result.saju_result.sinsal && (
                 <Suspense fallback={<LoadingSpinner message="신살 로딩 중..." />}>
                   <Sinsal sinsal={result.saju_result.sinsal} />
+                </Suspense>
+              )}
+
+              {/* 용신 분석 */}
+              {result.saju_result.yongsin && (
+                <Suspense fallback={<LoadingSpinner message="용신 분석 로딩 중..." />}>
+                  <YongsinAnalysis yongsin={result.saju_result.yongsin} />
                 </Suspense>
               )}
 
